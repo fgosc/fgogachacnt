@@ -14,6 +14,7 @@ import sys
 progname = "FGOガチャカウント"
 version = "0.0.1"
 
+Item_dir = Path(__file__).resolve().parent / Path("item/")
 Servant_dir = Path(__file__).resolve().parent / Path("item/Servant/")
 CE_dir = Path(__file__).resolve().parent / Path("item/CE/")
 train_card = Path(__file__).resolve().parent / Path("card.xml") # カード下部認識用
@@ -788,7 +789,7 @@ class Item:
         # 既存のアイテムとの距離を比較
         for i in dist_ce_center.keys():
             d = hasher.compare(hash_item, dist_ce_center[i])
-            if d <= 10:
+            if d <= 15: # 10だと失敗する場合あり
                 itemfiles[i] = d
         if len(itemfiles) > 0:
             itemfiles = sorted(itemfiles.items(), key=lambda x:x[1])
@@ -1075,6 +1076,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()    # 引数を解析
 
+    if not Item_dir.is_dir():
+        Item_dir.mkdir()
     if not Servant_dir.is_dir():
         Servant_dir.mkdir()
     if not CE_dir.is_dir():

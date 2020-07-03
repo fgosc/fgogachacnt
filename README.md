@@ -17,14 +17,11 @@ Python 3.7以降
 5. card.xml:  カード下部の文字を読むSVMのトレーニングファイル
 
 # インストール
-
-* OpenCV をインストール
-* makecard.py を実行
-
 下記コマンドを実行
-
-`$ python makecard.py`
-
+```
+$ pip install -r requirements.txt
+$ python makecard.py
+```
 ※fgogachacnt.py, csv2report.py, card.xmlを同じフォルダにいれること
 
 

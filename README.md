@@ -49,6 +49,7 @@ optional arguments:
 ```
 
 # 実行例
+# フレンドポイント召喚のスクショ処理から召喚報告まで
 ```
 $ python fgogachacnt.py image/IMG_????.PNG >output.csv
 $ python csv2report.py output.csv
@@ -60,6 +61,10 @@ $ python csv2report.py output.csv
 ★1コード79-★2コード37
 #FGO_FP召喚報告
 ```
+# 聖晶石召喚のスクショ処理
+```
+$ python fgogachacnt.py -m 11 image/IMG_????.PNG >output.csv
+```
 
 ***
 * 恒常以外のカードを初めて認識させた場合、item フォルダ内に servent???.png, ce???.png というファイルができる
@@ -68,3 +73,4 @@ $ python csv2report.py output.csv
 
 # 制限
 * QPカンスト時にフォウ君を自動売却設定しているとレアリティを誤認識する
+* 現在自動的にカード名まで認識するのはフレンドポイント召喚の恒常アイテムのみ

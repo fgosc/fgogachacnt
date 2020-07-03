@@ -18,6 +18,7 @@ Item_dir = Path(__file__).resolve().parent / Path("item/")
 Servant_dir = Path(__file__).resolve().parent / Path("item/Servant/")
 CE_dir = Path(__file__).resolve().parent / Path("item/CE/")
 train_card = Path(__file__).resolve().parent / Path("card.xml") # カード下部認識用
+train_rarity = Path(__file__).resolve().parent / Path("rarity.xml") # カード下部認識用
 
 hasher = cv2.img_hash.PHash_create()
 
@@ -571,6 +572,7 @@ dist_status_class = {
     '術★3HP変換':np.array([[213, 141, 103, 99, 60, 214, 50, 9]], dtype='uint8'),
     '騎★3HP変換':np.array([[152, 233, 23, 52, 230, 163, 119, 56]], dtype='uint8'),
 }
+
 std_item_dic = {}
 for i in std_item:
     std_item_dic[i] = 0
@@ -591,7 +593,7 @@ class ScreenShot:
     """
     スクリーンショットを表すクラス
     """
-    def __init__(self, img_rgb, svm_card, mode, debug=False):
+    def __init__(self, img_rgb, svm_card, svm_rality, mode, debug=False):
         TRAINING_IMG_WIDTH = 1906
         threshold = 80
         self.img_rgb_orig = img_rgb
@@ -621,7 +623,7 @@ class ScreenShot:
         for i, pt in enumerate(item_pts):
             item_img_rgb = self.img_rgb[pt[1] :  pt[3],  pt[0] :  pt[2]]
             item_img_gray = self.img_gray[pt[1] :  pt[3],  pt[0] :  pt[2]]
-            self.items.append(Item(item_img_rgb, svm_card, debug))
+            self.items.append(Item(item_img_rgb, svm_card, svm_rality, debug))
             if debug:
                 cv2.imwrite('item' + str(i) + '.png', item_img_rgb)
 
@@ -715,10 +717,10 @@ class ScreenShot:
         return pts
 
 class Item:
-    def __init__(self, img_rgb, svm_card, debug=False):
+    def __init__(self, img_rgb, svm_card, svm_rality, debug=False):
         self.img_rgb = img_rgb
         self.card = self.classify_card(svm_card)
-        self.name = self.classify_item()
+        self.name = self.classify_item(svm_rality)
 
     def make_new_servant(self):
         """
@@ -847,10 +849,12 @@ class Item:
 
         return ""
 
-    def classify_status(self):
+    def classify_status(self, svm_rality):
         """
         既所持のアイテム画像の距離を計算して保持
         """
+        rality = self.classify_rality(svm_rality)
+
         hash_item = compute_hash_inner(self.img_rgb) #画像の距離
         itemfiles = {}
         # 既存のアイテムとの距離を比較
@@ -864,6 +868,7 @@ class Item:
             hash_status_class = self.compute_tanebi_class_hash(self.img_rgb)
             statusclassfiles = {}
             for i in dist_status_class.keys():
+                # クラス判定
                 if (item[0].replace('変換', ''))[-2:] in i:
                     dtc = hasher.compare(hash_status_class, dist_status_class[i])
                     if dtc <= 19: #18離れることがあったので(Screenshot_20200318-140020.png)
@@ -871,9 +876,9 @@ class Item:
             statusclassfiles = sorted(statusclassfiles.items(), key=lambda x:x[1])
             if len(statusclassfiles) > 0:
                 statusclass = next(iter(statusclassfiles))
-                return statusclass[0].replace('変換', '')
+                return statusclass[0][0] + rality + statusclass[0][3:].replace('変換', '')
 
-            return item[0]
+            return item[0][0] + rality + item[0][3:]
 
         return ""
 
@@ -954,7 +959,30 @@ class Item:
 
         return carddic[pred[1][0][0]]
 
-    def classify_item(self, debug=False):
+    def classify_rality(self, svm_rality):
+        """
+        レアリティ判別器
+        """
+        # Hog特徴のパラメータ
+        win_size = (120, 60)
+        block_size = (16, 16)
+        block_stride = (4, 4)
+        cell_size = (4, 4)
+        bins = 9
+        test = []
+        raritydic = { 10:'★1', 11:'★1', 20:'★2', 21:'★2', 30:'★3', 31:'★3'}
+
+        tmpimg = self.img_rgb[205:254,156:253]
+        
+        tmpimg = cv2.resize(tmpimg, (win_size))
+        hog = cv2.HOGDescriptor(win_size, block_size, block_stride, cell_size, bins)
+        test.append(hog.compute(tmpimg)) # 特徴量の格納
+        test = np.array(test)
+        pred = svm_rality.predict(test)
+
+        return raritydic[pred[1][0][0]]
+
+    def classify_item(self, svm_rality, debug=False):
         """
         アイテム判別器
         """
@@ -975,7 +1003,7 @@ class Item:
         elif self.card == "Exp. UP":
             item =  self.classify_exp()
         elif self.card == "Status UP":
-            item =  self.classify_status()            
+            item =  self.classify_status(svm_rality)            
         return item
 
     def compute_tanebi_class_hash(self, img_rgb):
@@ -997,6 +1025,16 @@ def compute_hash_inner(img_rgb):
     img = img_rgb[20:,:]
     return hasher.compute(img)
 
+def compute_hash_rality(img_rgb):
+    """
+    判別器
+    この判別器はレアリティを比較するもの
+    """
+    img = img_rgb[205:254,156:253]
+    cv2.imshow("img", cv2.resize(img, dsize=None, fx=4.5, fy=4.5))
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    return hasher.compute(img)
 
 def calc_dist_local_servant():
     """
@@ -1025,6 +1063,7 @@ def get_output(filenames, mode, debug=False):
     calc_dist_local_servant()
     calc_dist_local_ce()
     svm_card = cv2.ml.SVM_load(str(train_card))
+    svm_rarity = cv2.ml.SVM_load(str(train_rarity))
 
     csvfieldnames = { 'filename' : "合計",  '召喚数': "" } #CSVフィールド名用 key しか使わない
     wholelist = []
@@ -1043,7 +1082,7 @@ def get_output(filenames, mode, debug=False):
             img_rgb = imread(filename)
 
             try:
-                sc = ScreenShot(img_rgb, svm_card, mode, debug)
+                sc = ScreenShot(img_rgb, svm_card, svm_rarity, mode, debug)
                 #戦利品順番ルールに則った対応による出力処理
                 if prev_itemlist == sc.itemlist:
                     output = ({'filename': str(filename) + ': Duplicate'})
@@ -1053,9 +1092,9 @@ def get_output(filenames, mode, debug=False):
                     output.update(sc.allitemdic)
                     output['召喚数'] = mode
                     num_summon = num_summon + int(mode)
+                prev_itemlist = sc.itemlist
             except:
                 output = ({'filename': str(filename) + ': not valid'})
-            prev_itemlist = sc.itemlist
         outputcsv.append(output)
 
     tmpdic = {'召喚数': num_summon }

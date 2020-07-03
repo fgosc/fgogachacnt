@@ -1,6 +1,8 @@
 # fgogachacnt
 FGOのガチャ結果スクショを集計する
 
+しょっぽさんが集計しているフレンドポイント召喚集計 https://sites.google.com/site/gurugurufgo/home/flyer/fp-gacha の詳細報告をするためのツールです
+
 # 必要なソフトウェア
 Python 3.7以降
 

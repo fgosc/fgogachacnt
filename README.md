@@ -7,14 +7,14 @@ FGOのガチャ結果スクショを集計する
 Python 3.7以降
 
 # ファイル
-1. fgogachacnt.py :実行ファイル(画像認識)
-2. csv2report.py :実行ファイル(報告作成)
-3. makecard.py card.xml を作成
+1. `fgogachacnt.py` :実行ファイル(画像認識)
+2. `csv2report.py` :実行ファイル(報告作成)
+3. `makecard.py` card.xml を作成
 4. data 3.で使用されるフォルダ
 
 以下は3.実行時に作成される
 
-5. card.xml:  カード下部の文字を読むSVMのトレーニングファイル
+5. `card.xml`:  カード下部の文字を読むSVMのトレーニングファイル
 
 # インストール
 下記コマンドを実行
@@ -22,7 +22,7 @@ Python 3.7以降
 $ pip install -r requirements.txt
 $ python makecard.py
 ```
-※fgogachacnt.py, csv2report.py, card.xmlを同じフォルダにいれること
+※`fgogachacnt.py`, `csv2report.py`, `card.xml`を同じフォルダにいれること
 
 
 # 使い方

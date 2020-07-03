@@ -48,7 +48,7 @@ optional arguments:
 # 実行例
 # フレンドポイント召喚のスクショ処理から召喚報告まで
 ```
-$ python fgogachacnt.py image/IMG_????.PNG >output.csv
+$ python fgogachacnt.py -f image >output.csv
 $ python csv2report.py output.csv
 【フレンドポイント召喚】8860回
 ★0鯖0-★1鯖899-★2鯖427-★3鯖77-★4鯖3
@@ -60,7 +60,7 @@ $ python csv2report.py output.csv
 ```
 # 聖晶石召喚のスクショ処理
 ```
-$ python fgogachacnt.py -m 11 image/IMG_????.PNG >output.csv
+$ python fgogachacnt.py -m 11 -f image >output.csv
 ```
 
 ***

@@ -758,7 +758,7 @@ class Item:
         # 既存のアイテムとの距離を比較
         for i in dist_servant.keys():
             d = hasher.compare(hash_item, dist_servant[i])
-            if d <= 10:
+            if d <= 15:
                 itemfiles[i] = d
         if len(itemfiles) > 0:
             itemfiles = sorted(itemfiles.items(), key=lambda x:x[1])
@@ -777,7 +777,7 @@ class Item:
         # 既存のアイテムとの距離を比較
         for i in dist_ce.keys():
             d = hasher.compare(hash_item, dist_ce[i])
-            if d <= 10:
+            if d <= 15:
                 itemfiles[i] = d
         if len(itemfiles) > 0:
             itemfiles = sorted(itemfiles.items(), key=lambda x:x[1])
@@ -807,7 +807,7 @@ class Item:
         # 既存のアイテムとの距離を比較
         for i in dist_ccode.keys():
             d = hasher.compare(hash_item, dist_ccode[i])
-            if d <= 10:
+            if d <= 15:
                 itemfiles[i] = d
         if len(itemfiles) > 0:
             itemfiles = sorted(itemfiles.items(), key=lambda x:x[1])
@@ -825,7 +825,7 @@ class Item:
         # 既存のアイテムとの距離を比較
         for i in dist_exp.keys():
             d = hasher.compare(hash_item, dist_exp[i])
-            if d <= 10:
+            if d <= 15:
                 itemfiles[i] = d
         if len(itemfiles) > 0:
             itemfiles = sorted(itemfiles.items(), key=lambda x:x[1])
@@ -835,13 +835,14 @@ class Item:
             for i in dist_tanebi_class.keys():
                 if (item[0].replace('変換', ''))[-2:] in i:
                     dtc = hasher.compare(hash_tanebi_class, dist_tanebi_class[i])
-                    if dtc <= 19: #18離れることがあったので(Screenshot_20200318-140020.png)
+                    if dtc <= 22: #22離れることがあったので
                         tanebiclassfiles[i] = dtc
             tanebiclassfiles = sorted(tanebiclassfiles.items(), key=lambda x:x[1])
             if len(tanebiclassfiles) > 0:
                 tanebiclass = next(iter(tanebiclassfiles))
                 return tanebiclass[0].replace('変換', '')
 
+##           return item[0].replace('変換', '')
             return item[0]
 
         return ""
@@ -855,7 +856,7 @@ class Item:
         # 既存のアイテムとの距離を比較
         for i in dist_status.keys():
             d = hasher.compare(hash_item, dist_status[i])
-            if d <= 10:
+            if d <= 15:
                 itemfiles[i] = d
         if len(itemfiles) > 0:
             itemfiles = sorted(itemfiles.items(), key=lambda x:x[1])

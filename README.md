@@ -10,19 +10,22 @@ Python 3.7以降
 1. `fgogachacnt.py` :実行ファイル(画像認識)
 2. `csv2report.py` :実行ファイル(報告作成)
 3. `makecard.py` card.xml を作成
-4. data 3.で使用されるフォルダ
+4. `makerality.py` rality.xml を作成
+5. `data/` 3.4.で使用されるフォルダ
 
 以下は3.実行時に作成される
 
 5. `card.xml`:  カード下部の文字を読むSVMのトレーニングファイル
+6. `rality.xml`:  フォウくんのレアリティを判別するSVMのトレーニングファイル
 
 # インストール
 下記コマンドを実行
 ```
 $ pip install -r requirements.txt
 $ python makecard.py
+$ python makerality.py
 ```
-※`fgogachacnt.py`, `csv2report.py`, `card.xml`を同じフォルダにいれること
+※`fgogachacnt.py`, `csv2report.py`, `card.xml`, `rality.xml`を同じフォルダにいれること
 
 
 # 使い方
@@ -65,6 +68,7 @@ $ python fgogachacnt.py -m 11 -f image >output.csv
 
 ***
 * 恒常以外のカードを初めて認識させた場合、item フォルダ内に servent???.png, ce???.png というファイルができる
+* 出力でDuplication が出た場合は、同じ召喚画面を二回スクショしているものである
 * ファイル名をアイテム名に変更すると次回実行以降もそのアイテム名で表示されるため可読性があがる
 * 恒常以外のカードがあるスクショを認識させた場合 `csv2report.py` ではレアリティ認識できないので、分類「その他」として出力されるため計算結果を自分で修正する必要がある
 

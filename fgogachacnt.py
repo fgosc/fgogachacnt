@@ -671,6 +671,9 @@ class ScreenShot:
 
         button_pts = list(button.values())
         button_pts.sort()
+        if debug:
+            print("認識したボタン位置:", end="")
+            print(button_pts)
 
         ### ボタンの位置から高さ・幅を決めてしまう
         ### ずれがわかりやすいように所持サーヴァントの角で切る ipad 2018 (71,339)
@@ -779,7 +782,7 @@ class Item:
         # 既存のアイテムとの距離を比較
         for i in dist_ce.keys():
             d = hasher.compare(hash_item, dist_ce[i])
-            if d <= 15:
+            if d <= 10: # 15にすると誤認識する
                 itemfiles[i] = d
         if len(itemfiles) > 0:
             itemfiles = sorted(itemfiles.items(), key=lambda x:x[1])

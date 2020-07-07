@@ -35,7 +35,7 @@ $ pip install -r requirements.txt
 $ python makecard.py
 $ python makerality.py
 ```
-※`fgogachacnt.py`, `csv2report.py`, `*.xml`, `*.csv`, `*.txt`をを同じフォルダにいれること
+※`fgogachacnt.py`, `csv2report.py`, `*.xml`, `*.csv`, `*.txt`を同じフォルダにいれること
 
 
 # 使い方

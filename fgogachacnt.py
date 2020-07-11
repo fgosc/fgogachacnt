@@ -15,13 +15,15 @@ progname = "FGOガチャカウント"
 version = "0.0.2"
 
 Item_dir = Path(__file__).resolve().parent / Path("item/")
-Servant_dir = Path(__file__).resolve().parent / Path("item/Servant/")
-CE_dir = Path(__file__).resolve().parent / Path("item/CE/")
+Servant_dir = Path(__file__).resolve().parent / Path("item/servant/")
+CE_dir = Path(__file__).resolve().parent / Path("item/ce/")
+CCode_dir = Path(__file__).resolve().parent / Path("item/ccode/")
 train_card = Path(__file__).resolve().parent / Path("card.xml") # カード下部認識用
 train_rarity = Path(__file__).resolve().parent / Path("rarity.xml") # カード下部認識用
 Servant_dist_file = Path(__file__).resolve().parent / Path("hash_srv.csv")
 CE_dist_file = Path(__file__).resolve().parent / Path("hash_ce.csv")
 CE_center_dist_file = Path(__file__).resolve().parent / Path("hash_ce_center.csv")
+CCode_dist_file = Path(__file__).resolve().parent / Path("hash_ccode.csv")
 FP_34Servant_wl = Path(__file__).resolve().parent / Path("fp_34srv_wl.txt")
 FP_12CE_bl = Path(__file__).resolve().parent / Path("fp_12ce_bl.txt")
 FP_3CE_wl = Path(__file__).resolve().parent / Path("fp_3ce_wl.txt")
@@ -91,10 +93,10 @@ status_3star = ['全★3ATK', '剣★3ATK', '槍★3ATK', '弓★3ATK',
 ##                  '月の勝利者', '火炎伯爵', '理想の王聖', '目醒め前', '聖者の依代',
 ##                  '起源弾', '陽だまりの中で', '魔性菩薩', '黄昏の王聖', '黒聖杯']
 kalesco = ['カレイドスコープ']
-ccode_1star = [ 'コード：モータル', 'コード：ブルート', 'コード：コープス',
-            'コード：イービル', 'コード：ニンバス',]
-ccode_2star = ['コード：ブレス', 'コード：グリッター', 'コード：バースト',           
-            'コード：フォーカス', 'コード：キュア―',]
+##ccode_1star = [ 'コード：モータル', 'コード：ブルート', 'コード：コープス',
+##            'コード：イービル', 'コード：ニンバス',]
+##ccode_2star = ['コード：ブレス', 'コード：グリッター', 'コード：バースト',           
+##            'コード：フォーカス', 'コード：キュア―',]
 
 std_item = []
 ##std_item = servant_0star + servant_1star + servant_2star \
@@ -260,16 +262,16 @@ dist_ce_center = {
 ##    '龍脈':np.array([[14, 179, 1, 12, 9, 64, 25, 64]], dtype='uint8'),
     }
 dist_ccode = {
-    'コード：イービル':np.array([[91, 95, 166, 243, 120, 126, 154, 30]], dtype='uint8'),
-    'コード：キュア―':np.array([[182, 35, 187, 220, 12, 67, 3, 20]], dtype='uint8'),
-    'コード：グリッター':np.array([[25, 215, 106, 218, 62, 250, 12, 250]], dtype='uint8'),
-    'コード：コープス':np.array([[175, 62, 66, 15, 251, 203, 62, 30]], dtype='uint8'),
-    'コード：ニンバス':np.array([[251, 95, 74, 95, 235, 95, 191, 95]], dtype='uint8'),
-    'コード：バースト':np.array([[51, 60, 190, 251, 175, 255, 106, 191]], dtype='uint8'),
-    'コード：フォーカス':np.array([[185, 239, 234, 253, 235, 255, 255, 251]], dtype='uint8'),
-    'コード：ブルート':np.array([[199, 54, 171, 227, 120, 155, 54, 220]], dtype='uint8'),
-    'コード：ブレス':np.array([[163, 199, 26, 172, 188, 62, 62, 173]], dtype='uint8'),
-    'コード：モータル':np.array([[47, 28, 194, 107, 248, 211, 9, 246]], dtype='uint8'),
+##    'コード：イービル':np.array([[91, 95, 166, 243, 120, 126, 154, 30]], dtype='uint8'),
+##    'コード：キュア―':np.array([[182, 35, 187, 220, 12, 67, 3, 20]], dtype='uint8'),
+##    'コード：グリッター':np.array([[25, 215, 106, 218, 62, 250, 12, 250]], dtype='uint8'),
+##    'コード：コープス':np.array([[175, 62, 66, 15, 251, 203, 62, 30]], dtype='uint8'),
+##    'コード：ニンバス':np.array([[251, 95, 74, 95, 235, 95, 191, 95]], dtype='uint8'),
+##    'コード：バースト':np.array([[51, 60, 190, 251, 175, 255, 106, 191]], dtype='uint8'),
+##    'コード：フォーカス':np.array([[185, 239, 234, 253, 235, 255, 255, 251]], dtype='uint8'),
+##    'コード：ブルート':np.array([[199, 54, 171, 227, 120, 155, 54, 220]], dtype='uint8'),
+##    'コード：ブレス':np.array([[163, 199, 26, 172, 188, 62, 62, 173]], dtype='uint8'),
+##    'コード：モータル':np.array([[47, 28, 194, 107, 248, 211, 9, 246]], dtype='uint8'),
     }
 dist_exp = {
     '全種火':np.array([[133, 228, 89, 249, 154, 156, 190, 166]], dtype='uint8'),
@@ -663,7 +665,7 @@ class ScreenShot:
  
         for i, pt in enumerate(item_pts):
             item_img_rgb = self.img_rgb[pt[1] :  pt[3],  pt[0] :  pt[2]]
-            title_img_rgb = self.img_rgb[pt[3] + 2 :  pt[3] + 11,  pt[0] + 31 :  pt[0] + 98]
+            title_img_rgb = self.img_rgb[pt[3] + 1 :  pt[3] + 10,  pt[0] + 31 :  pt[0] + 98]
 ##            item_img_gray = self.img_gray[pt[1] :  pt[3],  pt[0] :  pt[2]]
             self.items.append(Item(item_img_rgb, title_img_rgb, svm_card, svm_rarity, args.debug))
             if args.debug:
@@ -898,8 +900,12 @@ class Item:
         """
         既所持のアイテム画像の距離を計算して保持
         """
-        hash_item = hasher.compute(self.img_rgb[37:91,37:91]) #画像の距離
+        h, w = self.img_rgb.shape[:2]
+        size = 54
+        hash_item = hasher.compute(self.img_rgb[int(h/2-size/2):int(h/2+size/2),
+                                                int(w/2-size/2):int(w/2+size/2)]) #画像の距離
         itemfiles = {}
+
         # 既存のアイテムとの距離を比較
         for i in dist_ccode.keys():
             d = hasher.compare(hash_item, dist_ccode[i])
@@ -1153,11 +1159,6 @@ def calc_dist_servant():
         for row in reader:    
             dist_servant[row[0]] = np.array([row[2:]], dtype='uint8')
 
-##    files = Servant_dir.glob('**/*.png')
-##    for fname in files:
-##        img = imread(fname)
-##        dist_local_servant[fname] = compute_hash_inner(img)
-
 def calc_dist_ce():
     """
     既所持のアイテム画像の距離(一次元配列)の辞書を作成して保持
@@ -1172,10 +1173,14 @@ def calc_dist_ce():
         for row in reader:    
             dist_ce_center[row[0]] = np.array([row[2:]], dtype='uint8')
 
-##    files = Servant_dir.glob('**/*.png')
-##    for fname in files:
-##        img = imread(fname)
-##        dist_local_servant[fname] = compute_hash_inner(img)
+def calc_dist_ccode():
+    """
+    既所持のアイテム画像の距離(一次元配列)の辞書を作成して保持
+    """
+    with open(CCode_dist_file, encoding='UTF-8') as f:
+        reader = csv.reader(f)
+        for row in reader:    
+            dist_ccode[row[0]] = np.array([row[2:]], dtype='uint8')
 
 def calc_dist_local_ce():
     """
@@ -1219,11 +1224,18 @@ def make_std_item():
                 ce.append(row[0])
             elif row[1] in ['3'] and row[0] in wl_ce:
                 ce.append(row[0])
+    ccode = []
+    with open(CCode_dist_file, encoding='UTF-8') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            if row[1] in ['1', '2']:
+                ccode.append(row[0])
+
     std_item = servant \
                + exp_1star + exp_2star + exp_3star + exp_4star + exp_5star \
                + status_1star + status_2star + status_3star \
                + ce \
-               + ccode_1star + ccode_2star
+               + ccode
 
     for i in std_item:
         std_item_dic[i] = 0
@@ -1243,6 +1255,7 @@ def get_output(filenames, args):
     calc_dist_servant()
 ##    calc_dist_local_ce()
     calc_dist_ce()
+    calc_dist_ccode()
     make_std_item()
     svm_card = cv2.ml.SVM_load(str(train_card))
     svm_rarity = cv2.ml.SVM_load(str(train_rarity))

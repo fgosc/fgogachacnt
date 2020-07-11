@@ -21,20 +21,25 @@ import cv2
 Image_dir = Path(__file__).resolve().parent / Path("item/")
 Image_dir_ce = Image_dir / Path("ce/")
 Image_dir_servant = Image_dir / Path("servant/")
+Image_dir_ccode = Image_dir / Path("ccode/")
 CE_blacklist_file = Path(__file__).resolve().parent / Path("ce_bl.txt")
 Servant_blacklist_file = Path(__file__).resolve().parent / Path("srv_bl.csv")
 Servant_output_file = Path(__file__).resolve().parent / Path("hash_srv.csv")
 CE_output_file = Path(__file__).resolve().parent / Path("hash_ce.csv")
 CE_center_output_file = Path(__file__).resolve().parent / Path("hash_ce_center.csv")
+CCode_output_file = Path(__file__).resolve().parent / Path("hash_ccode.csv")
 if not Image_dir.is_dir():
     Image_dir.mkdir()
 if not Image_dir_ce.is_dir():
     Image_dir_ce.mkdir()
 if not Image_dir_servant.is_dir():
     Image_dir_servant.mkdir()
+if not Image_dir_ccode.is_dir():
+    Image_dir_ccode.mkdir()
 
 url_ce = "https://api.atlasacademy.io/export/JP/nice_equip.json"
 url_servant = "https://api.atlasacademy.io/export/JP/nice_servant.json"
+url_ccode = "https://api.atlasacademy.io/export/JP/nice_command_code.json"
 
 hasher = cv2.img_hash.PHash_create()
 
@@ -161,7 +166,46 @@ def make_servant_data():
         writer = csv.writer(f, lineterminator="\n")
         writer.writerows(srv_output)
 
+def make_ccode_data():
+    ccode_output =[]
+    ccode_center_output =[]
+##    for i in range(5):
+    r_get = requests.get(url_ccode)
+
+    ccode_list = r_get.json()
+##    with open(CCode_blacklist_file, encoding='UTF-8') as f:
+##        bl_ccodes = [s.strip() for s in f.readlines()]
+    for ccode in ccode_list:
+        if ccode["rarity"] <= 2:
+            name = ccode["name"]
+            mylist = list(ccode['extraAssets']['faces']['cc'].values())
+            url_download = mylist[0]
+            tmp = url_download.split('/')
+            savefilename = tmp[-1]
+            Image_dir_sub = Image_dir_ccode / str(ccode["rarity"]) 
+            Image_file = Image_dir_sub / Path(savefilename)
+            if Image_dir_sub.is_dir() == False:
+                Image_dir_sub.mkdir()
+            if Image_file.is_file() == False:
+                response = requests.get(url_download)
+                with open(Image_file, 'wb') as saveFile:
+                    saveFile.write(response.content)
+            img_rgb = cv2.imread(str(Image_file))
+            h, w = img_rgb.shape[:2]
+            size = 54
+            hash = hasher.compute(img_rgb[int(h/2-size/2):int(h/2+size/2),
+                                                int(w/2-size/2):int(w/2+size/2)])
+            tmp = [name] + [ccode['rarity']] + list(hash[0])
+    #            print(hash[0][0])
+    #            print(tmp)
+            ccode_output.append(tmp)
+
+    with open(CCode_output_file, 'w', encoding="UTF-8") as f:
+        writer = csv.writer(f, lineterminator="\n")
+        writer.writerows(ccode_output)
+
 
 if __name__ == '__main__':
-    make_ce_data()
-    make_servant_data()
+##    make_ce_data()
+##    make_servant_data()
+    make_ccode_data()

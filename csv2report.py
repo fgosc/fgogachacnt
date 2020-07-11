@@ -8,13 +8,15 @@ from pathlib import Path
 
 Servant_file = Path(__file__).resolve().parent / Path("hash_srv.csv")
 CE_file = Path(__file__).resolve().parent / Path("hash_ce.csv")
+CCode_file = Path(__file__).resolve().parent / Path("hash_ccode.csv")
 
 servant_rarity = {}
 ce_rarity = {}
+ccode_rarity = {}
 
 def make_rarity():
     """
-    CSVからサーヴァントと概念礼装のレアリティ情報を作成
+    CSVからサーヴァントと概念礼装とコマンドコードのレアリティ情報を作成
     """
     for i in range(6):
         servant_rarity[i] = []
@@ -33,6 +35,15 @@ def make_rarity():
         ces = [row for row in reader]
         for ce in ces:
             ce_rarity[int(ce[1])] = ce_rarity[int(ce[1])] + [ce[0]]
+
+    for i in range(2):
+        ccode_rarity[i+1] = []
+
+    with open(CCode_file, encoding='UTF-8') as f:
+        reader = csv.reader(f)
+        ccodes = [row for row in reader]
+        for ccode in ccodes:
+            ccode_rarity[int(ccode[1])] = ccode_rarity[int(ccode[1])] + [ccode[0]]
 
 def make_data():
     """
@@ -135,9 +146,9 @@ def make_data():
         elif item in ce_rarity[3]:
             num_ce_3star = num_ce_3star + int(l[0][item])
 
-        elif item in fgogachacnt.ccode_1star:
+        elif item in ccode_rarity[1]:
             num_ccode_1star = num_ccode_1star + int(l[0][item])
-        elif item in fgogachacnt.ccode_2star:
+        elif item in ccode_rarity[2]:
             num_ccode_2star = num_ccode_2star + int(l[0][item])
 
     if mode == "stone":
@@ -185,7 +196,7 @@ def make_data():
     if summon_diff > 0:
         result = result + "その他" + str(summon_diff) + "\n"
 
-    result = result + "#FGO_聖晶石召喚報告"
+    result = result + "#FGO_FP召喚報告"
 
     return result
 

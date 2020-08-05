@@ -17,6 +17,10 @@ from pathlib import Path
 import codecs
 import csv
 import cv2
+from tqdm import tqdm
+
+ID_KIKOU_START = 9304760
+ID_KIKOU_END = 9305230
 
 Image_dir = Path(__file__).resolve().parent / Path("item/")
 Image_dir_ce = Image_dir / Path("ce/")
@@ -69,11 +73,12 @@ def make_ce_data():
     ce_list = r_get.json()
     with open(CE_blacklist_file, encoding='UTF-8') as f:
         bl_ces = [s.strip() for s in f.readlines()]
-    for ce in ce_list:
+    for ce in tqdm(ce_list):
         name = ce["name"]
 ##        b = name.encode('cp932', "ignore")
 ##        name_after = b.decode('cp932')
-        if ce["atkMax"]-ce["atkBase"]+ce["hpMax"]-ce["hpBase"]==0:
+        if ce["atkMax"]-ce["atkBase"]+ce["hpMax"]-ce["hpBase"]==0 \
+           and ID_KIKOU_START > ce["id"] < ID_KIKOU_END:
 ##            print(": exclude")
             continue
 ##        if ce["name"].startswith("概念礼装EXPカード："):
@@ -126,7 +131,7 @@ def make_servant_data():
         reader = csv.DictReader(f)
         bl_sarvants = [row for row in reader]
 
-    for servant in seravnt_list:
+    for servant in tqdm(seravnt_list):
         name = servant["name"]
         if name == "哪吒": # "Windows の cp932 でエラーになる問題
             name = "ナタ" 
@@ -175,7 +180,7 @@ def make_ccode_data():
     ccode_list = r_get.json()
 ##    with open(CCode_blacklist_file, encoding='UTF-8') as f:
 ##        bl_ccodes = [s.strip() for s in f.readlines()]
-    for ccode in ccode_list:
+    for ccode in tqdm(ccode_list):
         if ccode["rarity"] <= 2:
             name = ccode["name"]
             mylist = list(ccode['extraAssets']['faces']['cc'].values())
@@ -206,6 +211,6 @@ def make_ccode_data():
 
 
 if __name__ == '__main__':
-##    make_ce_data()
-##    make_servant_data()
+    make_ce_data()
+    make_servant_data()
     make_ccode_data()

@@ -33,7 +33,7 @@ Python 3.7以降
 ```
 $ pip install -r requirements.txt
 $ python makecard.py
-$ python makerality.py
+$ python makerarity.py
 ```
 ※`fgogachacnt.py`, `csv2report.py`, `*.xml`, `*.csv`, `*.txt`を同じフォルダにいれること
 

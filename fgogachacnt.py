@@ -664,8 +664,8 @@ class ScreenShot:
         self.items = []
  
         for i, pt in enumerate(item_pts):
-            item_img_rgb = self.img_rgb[pt[1] :  pt[3],  pt[0] :  pt[2]]
-            title_img_rgb = self.img_rgb[pt[3] + 1 :  pt[3] + 10,  pt[0] + 31 :  pt[0] + 98]
+            item_img_rgb = self.img_rgb[pt[1]: pt[3], pt[0]: pt[2]]
+            title_img_rgb = self.img_rgb[pt[3] + 1: pt[3] + 10, pt[0] + 31: pt[0] + 98]
 ##            item_img_gray = self.img_gray[pt[1] :  pt[3],  pt[0] :  pt[2]]
             self.items.append(Item(item_img_rgb, title_img_rgb, svm_card, svm_rarity, args.debug))
             if args.debug:
@@ -797,14 +797,19 @@ class ScreenShot:
         """
 
         if num == "10":
-            pts = [(39, 83, 167, 211), (192, 83, 320, 211), (344, 83, 472, 211),
-                   (496, 83, 624, 211), (648, 83, 776, 211), (801, 83, 929, 211),
+            pts = [(39, 83, 167, 211), (192, 83, 320, 211),
+                   (344, 83, 472, 211),
+                   (496, 83, 624, 211), (648, 83, 776, 211),
+                   (801, 83, 929, 211),
                    (192, 266, 320, 394), (344, 266, 472, 394),
                    (496, 266, 624, 394), (648, 266, 776, 394)]
         else:
-            pts = [(39, 83, 167, 211), (192, 83, 320, 211), (344, 83, 472, 211),
-                   (496, 83, 624, 211), (648, 83, 776, 211), (801, 83, 929, 211),
-                   (115, 266, 243, 394), (268, 266, 396, 394), (420, 266, 548, 394),
+            pts = [(39, 83, 167, 211), (192, 83, 320, 211),
+                   (344, 83, 472, 211),
+                   (496, 83, 624, 211), (648, 83, 776, 211),
+                   (801, 83, 929, 211),
+                   (115, 266, 243, 394), (268, 266, 396, 394),
+                   (420, 266, 548, 394),
                    (572, 266, 700, 394), (725, 266, 852, 394)]
         return pts
 
@@ -956,7 +961,7 @@ class Item:
         """
         rarity = self.classify_rarity(svm_rarity)
 
-        hash_item = compute_hash_inner(self.img_rgb) #画像の距離
+        hash_item = compute_hash_exp(self.img_rgb) #画像の距離
         itemfiles = {}
         # 既存のアイテムとの距離を比較
         for i in dist_status.keys():
@@ -1127,6 +1132,21 @@ def compute_hash_inner(img_rgb):
     この判別器は上部のクラスアイコンと下部の★表示を除いた部分を比較するもの
     """
 ##    img = img_rgb[20:,:]
+##    img = img_rgb[34:86,:]
+    img = img_rgb[34:104,:]
+##    cv2.imshow("img", cv2.resize(img, dsize=None, fx=5.5, fy=5.5))
+##    cv2.waitKey(0)
+##    cv2.destroyAllWindows()
+##    cv2.imwrite("antan_gacha.png", img)
+
+    return hasher.compute(img)
+
+def compute_hash_exp(img_rgb):
+    """
+    判別器
+    この判別器は上部のクラスアイコンと下部の★表示を除いた部分を比較するもの
+    """
+##    img = img_rgb[20:,:]
     img = img_rgb[34:104,:]
     return hasher.compute(img)
 
@@ -1190,7 +1210,7 @@ def calc_dist_local_ce():
     for fname in files:
         img = imread(fname)
         dist_local_ce[fname] = compute_hash_inner(img)
-        dist_local_ce_center[fname] = hasher.compute(img[78:163,86:190])
+        dist_local_ce_center[fname] = hasher.compute(img[35:77,40:88])
 
 
 def make_std_item():

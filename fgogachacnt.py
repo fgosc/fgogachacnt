@@ -685,10 +685,46 @@ class ScreenShot:
             itemlist.append(name)
         return itemlist
 
+
+    def tempolary_resize(self):
+        '''
+        主に低解像度機種での位置誤差をなくすため拡大する
+        拡大対象は横額縁が無い機種
+        '''
+        TRAINING_IMG_WIDTH = 2048
+        NO_EDGE_RATIO = 0.02
+        height_o, width_o = self.img_rgb_orig.shape[:2]
+
+        lower_w = np.array([210, 100, 200])
+        upper_w = np.array([255, 255, 255])
+        img_mask_w = cv2.inRange(self.img_rgb_orig, lower_w, upper_w)
+
+        closebutton_pts = []
+        contours = cv2.findContours(img_mask_w, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
+        for cnt in contours:
+            area = cv2.contourArea(cnt)
+            if area > 500:
+                ret = cv2.boundingRect(cnt)
+                pts = [ret[0], ret[1], ret[0] + ret[2], ret[1] + ret[3]]
+                if ret[0] < width_o / 4 and ret[1] < height_o / 4 and 2.2 < ret[2] / ret[3] < 2.5:
+                    closebutton_pts.append(pts)
+        closebutton_pts.sort()
+
+        if closebutton_pts[0][0] / width_o < NO_EDGE_RATIO:
+            wscale = (1.0 * width_o) / TRAINING_IMG_WIDTH
+            resizeScale = 1 / wscale
+
+            if resizeScale > 1:
+                matImgResize = 1 / resizeScale
+                self.img_rgb_orig = cv2.resize(self.img_rgb_orig, (0,0), fx=resizeScale, fy=resizeScale, interpolation=cv2.INTER_CUBIC)
+            else:
+                self.img_rgb_orig = cv2.resize(self.img_rgb_orig, (0,0), fx=resizeScale, fy=resizeScale, interpolation=cv2.INTER_AREA)
+        
     def extract_game_screen(self, args):
         """
         額縁の影響を除去してどのスクショでも同じ画面を切り出す
         """
+        self.tempolary_resize()
         height, width = self.img_rgb_orig.shape[:2]
         lower_w = np.array([100,100,100]) 
         upper_w = np.array([255,255,255])

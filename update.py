@@ -62,6 +62,7 @@ servant_class = {'saber':'剣',
     
 def compute_hash_inner(img_rgb):
     img = img_rgb[34:104,:]    
+##    img = img_rgb[34:86,:]    
     return hasher.compute(img)
 
 def make_ce_data():

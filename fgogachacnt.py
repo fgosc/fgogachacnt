@@ -1013,14 +1013,14 @@ class Item:
                 # クラス判定
                 if (item[0].replace('変換', ''))[-2:] in i:
                     dtc = hasher.compare(hash_status_class, dist_status_class[i])
-                    if dtc <= 20: #18離れることがあったので(Screenshot_20200318-140020.png)
-                        statusclassfiles[i] = dtc
+##                    if dtc <= 20: #18離れることがあったので(Screenshot_20200318-140020.png)
+                    statusclassfiles[i] = dtc
             statusclassfiles = sorted(statusclassfiles.items(), key=lambda x:x[1])
             if len(statusclassfiles) > 0:
                 statusclass = next(iter(statusclassfiles))
                 return statusclass[0][0] + rarity + statusclass[0][3:].replace('変換', '')
 
-            return item[0][0] + rarity + item[0][3:]
+            return item[0][0] + rarity + item[0][3:].replace('変換', '')
 
         return ""
 

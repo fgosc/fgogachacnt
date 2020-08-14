@@ -1292,7 +1292,7 @@ def get_output(filenames, args):
         f = Path(filename)
 
         if f.exists() == False:
-            output = { 'filename': filename + ': Not Found' }
+            output = { 'filename': str(filename) + ': Not Found' }
         else:            
             img_rgb = imread(filename)
 

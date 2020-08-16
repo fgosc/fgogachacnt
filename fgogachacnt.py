@@ -1034,7 +1034,7 @@ class Item:
         # 既存のアイテムとの距離を比較
         for i in dist_local_servant.keys():
             d = hasher.compare(hash_item, dist_local_servant[i])
-            if d <= 10:
+            if d <= 20:
                 itemfiles[i] = d
         if len(itemfiles) > 0:
             itemfiles = sorted(itemfiles.items(), key=lambda x:x[1])
@@ -1206,6 +1206,7 @@ def calc_dist_local_servant():
         img = imread(fname)
         dist_local_servant[fname] = compute_hash_inner(img)
 
+
 def calc_dist_servant():
     """
     既所持のアイテム画像の距離(一次元配列)の辞書を作成して保持
@@ -1307,9 +1308,9 @@ def get_output(filenames, args):
     """
     出力内容を作成
     """
-#    calc_dist_local_servant()
+    calc_dist_local_servant()
     calc_dist_servant()
-##    calc_dist_local_ce()
+    calc_dist_local_ce()
     calc_dist_ce()
     calc_dist_ccode()
     make_std_item()

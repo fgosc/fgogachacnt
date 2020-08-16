@@ -22,7 +22,7 @@ from tqdm import tqdm
 ID_KIKOU_START = 9304760
 ID_KIKOU_END = 9305230
 
-Image_dir = Path(__file__).resolve().parent / Path("item/")
+Image_dir = Path(__file__).resolve().parent / Path("data/")
 Image_dir_ce = Image_dir / Path("ce/")
 Image_dir_servant = Image_dir / Path("servant/")
 Image_dir_ccode = Image_dir / Path("ccode/")

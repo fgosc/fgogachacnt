@@ -190,10 +190,10 @@ def make_data():
             +num_ccode_1star + num_ccode_2star
 
     result = """【フレンドポイント召喚】{}回
-★0鯖{}-★1鯖{}(うち信勝{})-★2鯖{}-★3鯖{}-★4鯖{}
+★0鯖{}-★1鯖{}(信勝{})-★2鯖{}-★3鯖{}-★4鯖{}
 ★1種火{}-★2種火{}-★3種火{}-★4種火{}-★5種火{}
 ★1フォウ{}-★2フォウ{}-★3フォウ{}
-★1礼装{}-★2礼装{}-★3礼装{}-★3EXP礼装{}-★4EXP礼装{}
+★1礼装{}-★2礼装{}-★3礼装{}-★3EXP{}-★4EXP{}
 ★1コード{}-★2コード{}
 """.format(num_summon,
            num_servant_0star, num_servant_1star, num_nobukatsu, num_servant_2star, num_servant_3star, num_servant_4star,

@@ -10,6 +10,9 @@ from pathlib import Path
 from collections import Counter
 import csv
 import sys
+import logging
+
+logger = logging.getLogger(__name__)
 
 progname = "FGOガチャカウント"
 version = "0.0.2"
@@ -1345,7 +1348,8 @@ def get_output(filenames, args):
                     output['召喚数'] = len(sc.itemlist)
                     num_summon = num_summon + int(args.num)
                 prev_itemlist = sc.itemlist
-            except:
+            except Exception as e:
+                logger.error(f'{filename}: {e}', exc_info=True)
                 output = ({'filename': str(filename) + ': not valid'})
         outputcsv.append(output)
 
@@ -1373,6 +1377,10 @@ if __name__ == '__main__':
     parser.add_argument('--version', action='version', version=progname + " " + version)
 
     args = parser.parse_args()    # 引数を解析
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(name)s <%(filename)s-L%(lineno)s> [%(levelname)s] %(message)s',
+    )
 
     if not Item_dir.is_dir():
         Item_dir.mkdir()

@@ -1333,6 +1333,8 @@ def get_output(filenames, args):
 
         if f.exists() == False:
             output = { 'filename': str(filename) + ': Not Found' }
+        elif f.suffix.upper() not in ['.PNG', '.JPG', '.JPEG']:
+            output = { 'filename': str(filename) + ': Not Supported' }
         else:            
             img_rgb = imread(filename)
 

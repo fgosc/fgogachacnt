@@ -886,7 +886,7 @@ class Item:
                 continue
             else:
                 cv2.imwrite(itemfile.as_posix(), self.img_rgb)
-                dist_local_ce[itemfile] = compute_hash_inner(self.img_rgb)
+                dist_local_ce[itemfile] = compute_hash_ce(self.img_rgb)
                 dist_local_ce_center[itemfile] = hasher.compute(self.img_rgb[78:163,86:190])
                 break
         return itemfile.stem
@@ -913,7 +913,7 @@ class Item:
         """
         既所持のアイテム画像の距離を計算して保持
         """
-        hash_item = compute_hash_inner(self.img_rgb) #画像の距離
+        hash_item = compute_hash_ce(self.img_rgb) #画像の距離
 
         itemfiles = {}
         # 既存のアイテムとの距離を比較
@@ -1050,7 +1050,7 @@ class Item:
         """
         既所持のアイテム画像の距離を計算して保持
         """
-        hash_item = compute_hash_inner(self.img_rgb) #画像の距離
+        hash_item = compute_hash_ce(self.img_rgb) #画像の距離
 
         itemfiles = {}
         # 既存のアイテムとの距離を比較
@@ -1165,6 +1165,16 @@ class Item:
         img = img_rgb[:34,:35]
         return hasher.compute(img)
 
+
+def compute_hash_ce(img_rgb):
+    """
+    判別器
+    この判別器は上部のクラスアイコンと下部の★表示を除いた部分を比較するもの
+    """
+    img = img_rgb[34:87,:]
+    return hasher.compute(img)
+
+
 def compute_hash_inner(img_rgb):
     """
     判別器
@@ -1249,7 +1259,7 @@ def calc_dist_local_ce():
     files = CE_dir.glob('**/*.png')
     for fname in files:
         img = imread(fname)
-        dist_local_ce[fname] = compute_hash_inner(img)
+        dist_local_ce[fname] = compute_hash_ce(img)
         dist_local_ce_center[fname] = hasher.compute(img[35:77,40:88])
 
 

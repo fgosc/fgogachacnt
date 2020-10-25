@@ -62,8 +62,12 @@ servant_class = {'saber':'剣',
     
 def compute_hash_inner(img_rgb):
     img = img_rgb[34:104,:]    
-##    img = img_rgb[34:86,:]    
     return hasher.compute(img)
+
+def compute_hash_ce(img_rgb):
+    img = img_rgb[34:87,:]
+    return hasher.compute(img)
+
 
 def make_ce_data():
     ce_output =[]
@@ -102,7 +106,7 @@ def make_ce_data():
             with open(Image_file, 'wb') as saveFile:
                 saveFile.write(response.content)
         img_rgb = cv2.imread(str(Image_file))
-        hash = compute_hash_inner(img_rgb)
+        hash = compute_hash_ce(img_rgb)
         tmp = [name] + [ce['rarity']] + list(hash[0])
 #            print(hash[0][0])
 #            print(tmp)

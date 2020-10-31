@@ -45,7 +45,7 @@ def make_rarity():
         for ccode in ccodes:
             ccode_rarity[int(ccode[1])] = ccode_rarity[int(ccode[1])] + [ccode[0]]
 
-def make_data():
+def make_data(args):
     """
     報告内容を作成
     """
@@ -189,18 +189,45 @@ def make_data():
             + num_ce_1star + num_ce_2star + num_ce_3star + num_ce_exp_3star + num_ce_4star \
             +num_ccode_1star + num_ccode_2star
 
-    result = """【フレンドポイント召喚】{}回
+    if args.yamataikoku:
+        result = """【フレンドポイント召喚】{}回
 ★0鯖{}-★1鯖{}(信勝{})-★2鯖{}-★3鯖{}-★4鯖{}
 ★1種火{}-★2種火{}-★3種火{}-★4種火{}-★5種火{}
 ★1フォウ{}-★2フォウ{}-★3フォウ{}
 ★1礼装{}-★2礼装{}-★3礼装{}-★3EXP{}-★4EXP{}
 ★1コード{}-★2コード{}
 """.format(num_summon,
-           num_servant_0star, num_servant_1star, num_nobukatsu, num_servant_2star, num_servant_3star, num_servant_4star,
-           num_exp_1star, num_exp_2star, num_exp_3star, num_exp_4star, num_exp_5star,
-           num_status_1star, num_status_2star, num_status_3star,
-           num_ce_1star, num_ce_2star, num_ce_3star, num_ce_exp_3star, num_ce_4star,
-           num_ccode_1star, num_ccode_2star)
+            num_servant_0star, num_servant_1star, num_nobukatsu, num_servant_2star, num_servant_3star, num_servant_4star,
+            num_exp_1star, num_exp_2star, num_exp_3star, num_exp_4star, num_exp_5star,
+            num_status_1star, num_status_2star, num_status_3star,
+            num_ce_1star, num_ce_2star, num_ce_3star, num_ce_exp_3star, num_ce_4star,
+            num_ccode_1star, num_ccode_2star)
+    elif num_ce_exp_3star + num_ce_4star > 0:
+        result = """【フレンドポイント召喚】{}回
+★0鯖{}-★1鯖{}-★2鯖{}-★3鯖{}-★4鯖{}
+★1種火{}-★2種火{}-★3種火{}-★4種火{}-★5種火{}
+★1フォウ{}-★2フォウ{}-★3フォウ{}
+★1礼装{}-★2礼装{}-★3礼装{}-★3EXP{}-★4EXP{}
+★1コード{}-★2コード{}
+""".format(num_summon,
+            num_servant_0star, num_servant_1star, num_servant_2star, num_servant_3star, num_servant_4star,
+            num_exp_1star, num_exp_2star, num_exp_3star, num_exp_4star, num_exp_5star,
+            num_status_1star, num_status_2star, num_status_3star,
+            num_ce_1star, num_ce_2star, num_ce_3star, num_ce_exp_3star, num_ce_4star,
+            num_ccode_1star, num_ccode_2star)
+    else:
+        result = """【フレンドポイント召喚】{}回
+★0鯖{}-★1鯖{}-★2鯖{}-★3鯖{}-★4鯖{}
+★1種火{}-★2種火{}-★3種火{}-★4種火{}-★5種火{}
+★1フォウ{}-★2フォウ{}-★3フォウ{}
+★1礼装{}-★2礼装{}-★3礼装{}
+★1コード{}-★2コード{}
+""".format(num_summon,
+            num_servant_0star, num_servant_1star, num_servant_2star, num_servant_3star, num_servant_4star,
+            num_exp_1star, num_exp_2star, num_exp_3star, num_exp_4star, num_exp_5star,
+            num_status_1star, num_status_2star, num_status_3star,
+            num_ce_1star, num_ce_2star, num_ce_3star,
+            num_ccode_1star, num_ccode_2star)
 
     summon_diff = int(num_summon) - sum_std
     if summon_diff > 0:
@@ -212,10 +239,12 @@ def make_data():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    parser.add_argument('-y', '--yamataikoku', action='store_true',
+                        help='邪馬台国限定FP召喚')
     parser.add_argument('infile', nargs='?', type=argparse.FileType(),
                         default=sys.stdin)
     args = parser.parse_args()
     make_rarity()
-    result = make_data()
+    result = make_data(args)
     print(result)
 

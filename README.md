@@ -63,7 +63,7 @@ optional arguments:
 ```
 
 # 実行例
-# フレンドポイント召喚のスクショ処理から召喚報告まで
+## フレンドポイント召喚のスクショ処理から召喚報告まで
 ```
 $ python fgogachacnt.py -f image >output.csv
 $ python csv2report.py output.csv
@@ -75,7 +75,19 @@ $ python csv2report.py output.csv
 ★1コード79-★2コード37
 #FGO_FP召喚報告
 ```
-# 聖晶石召喚のスクショ処理から召喚報告まで
+## 期間限定ぐだぐだ邪馬台国2020フレンドポイント召喚のスクショ処理から召喚報告まで
+```
+$ python fgogachacnt.py -f image >output.csv
+$ python csv2report.py -y output.csv
+【フレンドポイント召喚】10000回
+★0鯖1-★1鯖982(信勝89)-★2鯖507-★3鯖93-★4鯖6
+★1種火909-★2種火672-★3種火480-★4種火276-★5種火96
+★1フォウ410-★2フォウ197-★3フォウ98
+★1礼装2768-★2礼装1660-★3礼装151-★3EXP352-★4EXP202
+★1コード98-★2コード42
+#FGO_FP召喚報告
+```
+## 聖晶石召喚のスクショ処理から召喚報告まで
 ```
 $ python fgogachacnt.py -n 11 -m stone -f image >output.csv
 $ python csv2report.py output.csv

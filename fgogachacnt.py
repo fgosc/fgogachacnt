@@ -642,6 +642,7 @@ class ScreenShot:
         threshold = 80
         self.img_rgb_orig = img_rgb
         self.img_gray_orig = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
+        self.img_hsv_orig = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2HSV)
 
         game_screen = self.extract_game_screen(args)
         if args.debug:
@@ -728,10 +729,14 @@ class ScreenShot:
         額縁の影響を除去してどのスクショでも同じ画面を切り出す
         """
         self.tempolary_resize()
-        height, width = self.img_rgb_orig.shape[:2]
+        lx, rx = self.find_notch(self.img_hsv_orig)
+        height, width_orig = self.img_rgb_orig.shape[:2]
+        img_rgb = self.img_rgb_orig[:,lx:width_orig - rx]
+
+        _, width = img_rgb.shape[:2]
         lower_w = np.array([100,100,100]) 
         upper_w = np.array([255,255,255])
-        img_mask_w = cv2.inRange(self.img_rgb_orig, lower_w, upper_w)
+        img_mask_w = cv2.inRange(img_rgb, lower_w, upper_w)
 
         contours, hierarchy = cv2.findContours(img_mask_w, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -778,7 +783,7 @@ class ScreenShot:
             cut_y1 = button_pts[0][-1] - int((1315 - 339)*button_width/(1803 - 241))
             cut_y2 = button_pts[0][-1]
 
-        gamescreen = self.img_rgb_orig[cut_y1:cut_y2,cut_x1:cut_x2]
+        gamescreen = img_rgb[cut_y1:cut_y2,cut_x1:cut_x2]
 
         return gamescreen
 
@@ -851,6 +856,35 @@ class ScreenShot:
                    (420, 266, 548, 394),
                    (572, 266, 700, 394), (725, 266, 852, 394)]
         return pts
+
+    def find_notch(self, img_hsv):
+        """
+        直線検出で検出されなかったフチ幅を検出
+        """
+        edge_width = 150
+
+        height, width = img_hsv.shape[:2]
+        target_color = 0
+        for i in range(edge_width):
+            img_hsv_x = img_hsv[:, i:i + 1]
+            # ヒストグラムを計算
+            hist = cv2.calcHist([img_hsv_x], [0], None, [256], [0, 256])
+            # 最小値・最大値・最小値の位置・最大値の位置を取得
+            _, maxVal, _, maxLoc = cv2.minMaxLoc(hist)
+            if not (maxLoc[1] == target_color and maxVal > height * 0.9):
+                break
+        lx = i
+        for j in range(edge_width):
+            img_hsv_x = img_hsv[:, width - j - 1: width - j]
+            # ヒストグラムを計算
+            hist = cv2.calcHist([img_hsv_x], [0], None, [256], [0, 256])
+            # 最小値・最大値・最小値の位置・最大値の位置を取得
+            _, maxVal, _, maxLoc = cv2.minMaxLoc(hist)
+            if not (maxLoc[1] == target_color and maxVal > height * 0.9):
+                break
+        rx = j
+
+        return lx, rx
 
 class Item:
     def __init__(self, img_rgb, title_img_rgb, svm_card, svm_rarity, debug=False):
@@ -1096,10 +1130,10 @@ class Item:
 
 ##        tmpimg = self.img_rgb[265:282,66:198]
         tmpimg = self.title_img_rgb
-##        cv2.imshow("img", cv2.resize(tmpimg, dsize=None, fx=5.5, fy=5.5))
-##        cv2.waitKey(0)
-##        cv2.destroyAllWindows()
-##        cv2.imwrite("cardimg.png", tmpimg)
+        # cv2.imshow("img", cv2.resize(tmpimg, dsize=None, fx=5.5, fy=5.5))
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+        # cv2.imwrite("cardimg.png", tmpimg)
         tmpimg = cv2.resize(tmpimg, (win_size))
         hog = cv2.HOGDescriptor(win_size, block_size, block_stride, cell_size, bins)
         test.append(hog.compute(tmpimg)) # 特徴量の格納

@@ -76,6 +76,8 @@ def make_data(args):
 
     num_kalesco = 0
     num_nobukatsu = 0
+    num_lily = 0
+    num_habetrot = 0
 
     num_ccode_1star = 0
     num_ccode_2star = 0
@@ -159,6 +161,10 @@ def make_data(args):
 
         if item == "織田信勝【弓】":
             num_nobukatsu = num_nobukatsu + int(l[0][item])
+        if item == "アルトリア・ペンドラゴン〔リリィ〕【剣】":
+            num_lily = num_lily + int(l[0][item])
+        if item == "ハベトロット【騎】":
+            num_habetrot = num_habetrot + int(l[0][item])
         continue
 
     if mode == "stone":
@@ -191,39 +197,39 @@ def make_data(args):
 
     if args.yamataikoku:
         result = """【フレンドポイント召喚】{}回
-★0鯖{}-★1鯖{}(信勝{})-★2鯖{}-★3鯖{}-★4鯖{}
-★1種火{}-★2種火{}-★3種火{}-★4種火{}-★5種火{}
-★1フォウ{}-★2フォウ{}-★3フォウ{}
-★1礼装{}-★2礼装{}-★3礼装{}-★3EXP{}-★4EXP{}
-★1コード{}-★2コード{}
+鯖: ★0_{}-★1_{}(信勝{})-★2_{}-★3_{}-★4_{}(リリィ{},ハベ{})
+種火: ★1_{}-★2_{}-★3_{}-★4_{}-★5_{}
+フォウ: ★1_{}-★2_{}-★3_{}
+礼装: ★1_{}-★2_{}-★3_{}-★3EXP_{}-★4EXP_{}
+コード: ★1_{}-★2_{}
 """.format(num_summon,
-            num_servant_0star, num_servant_1star, num_nobukatsu, num_servant_2star, num_servant_3star, num_servant_4star,
+            num_servant_0star, num_servant_1star, num_nobukatsu, num_servant_2star, num_servant_3star, num_servant_4star, num_lily, num_habetrot,
             num_exp_1star, num_exp_2star, num_exp_3star, num_exp_4star, num_exp_5star,
             num_status_1star, num_status_2star, num_status_3star,
             num_ce_1star, num_ce_2star, num_ce_3star, num_ce_exp_3star, num_ce_4star,
             num_ccode_1star, num_ccode_2star)
     elif num_ce_exp_3star + num_ce_4star > 0:
         result = """【フレンドポイント召喚】{}回
-★0鯖{}-★1鯖{}-★2鯖{}-★3鯖{}-★4鯖{}
-★1種火{}-★2種火{}-★3種火{}-★4種火{}-★5種火{}
-★1フォウ{}-★2フォウ{}-★3フォウ{}
-★1礼装{}-★2礼装{}-★3礼装{}-★3EXP{}-★4EXP{}
-★1コード{}-★2コード{}
+鯖: ★0_{}-★1_{}-★2_{}-★3_{}-★4_{}(リリィ{},ハベ{})
+種火: ★1_{}-★2_{}-★3_{}-★4_{}-★5_{}
+フォウ: ★1_{}-★2_{}-★3_{}
+礼装: ★1_{}-★2_{}-★3_{}-★3EXP_{}-★4EXP_{}
+コード: ★1_{}-★2_{}
 """.format(num_summon,
-            num_servant_0star, num_servant_1star, num_servant_2star, num_servant_3star, num_servant_4star,
+            num_servant_0star, num_servant_1star, num_servant_2star, num_servant_3star, num_servant_4star, num_lily, num_habetrot,
             num_exp_1star, num_exp_2star, num_exp_3star, num_exp_4star, num_exp_5star,
             num_status_1star, num_status_2star, num_status_3star,
             num_ce_1star, num_ce_2star, num_ce_3star, num_ce_exp_3star, num_ce_4star,
             num_ccode_1star, num_ccode_2star)
     else:
         result = """【フレンドポイント召喚】{}回
-★0鯖{}-★1鯖{}-★2鯖{}-★3鯖{}-★4鯖{}
-★1種火{}-★2種火{}-★3種火{}-★4種火{}-★5種火{}
-★1フォウ{}-★2フォウ{}-★3フォウ{}
-★1礼装{}-★2礼装{}-★3礼装{}
-★1コード{}-★2コード{}
+鯖: ★0_{}-★1_{}-★2_{}-★3_{}-★4_{}(リリィ{},ハベ{})
+種火: ★1_{}-★2_{}-★3_{}-★4_{}-★5_{}
+フォウ: ★1_{}-★2_{}-★3_{}
+礼装: ★1_{}-★2_{}-★3_{}
+コード: ★1_{}-★2_{}
 """.format(num_summon,
-            num_servant_0star, num_servant_1star, num_servant_2star, num_servant_3star, num_servant_4star,
+            num_servant_0star, num_servant_1star, num_servant_2star, num_servant_3star, num_servant_4star, num_lily, num_habetrot,
             num_exp_1star, num_exp_2star, num_exp_3star, num_exp_4star, num_exp_5star,
             num_status_1star, num_status_2star, num_status_3star,
             num_ce_1star, num_ce_2star, num_ce_3star,

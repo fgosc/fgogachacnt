@@ -1,4 +1,4 @@
-name:
+name: release archives for windows
 
 on:
   push: tags

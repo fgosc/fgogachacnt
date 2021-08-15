@@ -4,7 +4,7 @@ PythonPth="python39._pth"
 curl https://www.python.org/ftp/python/$PythonVersion/python-$PythonVersion-embed-amd64.zip -o python-$PythonVersion-embed-amd64.zip
 curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 
-unzip python-$PythonVersion-embed-amd64.zip python
+unzip python-$PythonVersion-embed-amd64.zip -d python
 rm "./python/$PythonPth"
 
 ./python/python ./get-pip.py

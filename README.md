@@ -29,6 +29,15 @@ Python 3.7以降
 15. `rality.xml`:  フォウくんのレアリティを判別するSVMのトレーニングファイル
 
 # インストール
+
+## GUI 版
+
+1. [リリースアーカイブ](https://github.com/fgosc/fgogachacnt/archive/refs/heads/master.zip) をダウンロード
+2. アーカイブを適当なフォルダに解凍
+3. `gui` フォルダの `setup.bat` をダブルクリック
+
+## コマンドライン版
+
 下記コマンドを実行
 ```
 $ pip install -r requirements.txt
@@ -39,6 +48,15 @@ $ python makerarity.py
 
 
 # 使い方
+
+## GUI 版
+
+1. `rungui.bat` をダブルクリック
+2. スクショが入ったフォルダを指定して「実行」
+3. 「実行結果」に結果が出力されたら処理成功
+
+## コマンドライン版
+
 ```
 usage: fgogachacnt.py [-h] [-m {fp,stone}] [-n {10,11}] [-f FOLDER] [-o] [-d]
                       [--version]

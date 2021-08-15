@@ -19,10 +19,10 @@ jobs:
       shell: bash
       working-directory: gui
 
-    - name: Create Zip File - Windows
-      uses: montudor/action-zip@v0.1.0
-      with: 
-        args: zip -qq -r ./fgogachacnt-gui-${{ steps.tag.outputs.version }}.zip .
+    - name: Create Zip File
+      run: |
+        zip -qq -r ./fgogachacnt-gui-windows-${{ steps.tag.outputs.version }}.zip .
+      shell: bash
 
     - name: Create Release
       id: create_release
@@ -35,13 +35,13 @@ jobs:
         draft: false
         prerelease: false
 
-    - name: Upload Release Asset - windows
+    - name: Upload Release Asset
       id: upload-release-asset-win
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./fgogachacnt-gui-${{ steps.tag.outputs.version }}.zip
-        asset_name: fgogachacnt-gui-${{ steps.tag.outputs.version }}.zip
+        asset_path: ./fgogachacnt-gui-windows-${{ steps.tag.outputs.version }}.zip
+        asset_name: fgogachacnt-gui-windows-${{ steps.tag.outputs.version }}.zip
         asset_content_type: application/zip

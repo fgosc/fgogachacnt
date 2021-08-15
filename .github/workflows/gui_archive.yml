@@ -15,7 +15,8 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Setup
-      run: setup
+      run: ./setup.bash
+      shell: bash
       working-directory: gui
 
     - name: Create Zip File - Windows

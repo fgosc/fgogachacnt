@@ -21,7 +21,7 @@ jobs:
 
     - name: Create Zip File
       run: |
-        Compress-Archive -Path ${{ env.GITHUB_WORKSPACE }} -DestinationPath fgogachacnt-gui-windows-${{ steps.tag.outputs.version }}.zip
+        Compress-Archive -Path ${{ github.repository }} -DestinationPath fgogachacnt-gui-windows-${{ steps.tag.outputs.version }}.zip
       shell: powershell
 
     - name: Create Release

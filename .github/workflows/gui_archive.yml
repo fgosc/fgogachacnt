@@ -21,8 +21,8 @@ jobs:
 
     - name: Create Zip File
       run: |
-        zip -qq -r ./fgogachacnt-gui-windows-${{ steps.tag.outputs.version }}.zip .
-      shell: bash
+        Compress-Archive -Path ${{ env.working_directory }} -DestinationPath fgogachacnt-gui-windows-${{ steps.tag.outputs.version }}.zip
+      shell: powershell
 
     - name: Create Release
       id: create_release

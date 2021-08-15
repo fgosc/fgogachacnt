@@ -1,1 +1,0 @@
-powershell .\setup.ps1

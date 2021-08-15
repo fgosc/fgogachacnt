@@ -14,6 +14,10 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
+    - name: Extract Tag version
+      id: tag
+      run: echo "::set-output name=version::$(echo ${{ github.ref }} | sed -e 's/refs\/tags\///')"
+
     - name: Setup
       run: ./setup.bash
       shell: bash

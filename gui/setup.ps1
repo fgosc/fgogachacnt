@@ -14,6 +14,9 @@ rm ".\python\$PythonPth"
 .\python\Scripts\pip install -r ..\requirements.txt
 .\python\Scripts\pip install PySimpleGUIWx
 
+rm python-$PythonVersion-embed-amd64.zip
+rm get-pip.py
+
 cd ..
 Invoke-Expression "$PythonExe makecard.py"
 Invoke-Expression "$PythonExe makerarity.py"

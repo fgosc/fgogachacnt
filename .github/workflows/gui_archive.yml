@@ -1,0 +1,52 @@
+name: release archives for windows
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  make-archive:
+    name: Make archive for Windows GUI
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Extract Tag version
+      id: tag
+      run: echo "::set-output name=version::$(echo ${{ github.ref }} | sed -e 's/refs\/tags\///')"
+
+    - name: Setup
+      run: ./setup.bash
+      shell: bash
+      working-directory: gui
+
+    - name: Create Zip File
+      run: |
+        $WorkingDirectory = (Convert-Path .)
+        Compress-Archive -Path $WorkingDirectory -DestinationPath fgogachacnt-gui-windows-${{ steps.tag.outputs.version }}.zip
+      shell: powershell
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset
+      id: upload-release-asset-win
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./fgogachacnt-gui-windows-${{ steps.tag.outputs.version }}.zip
+        asset_name: fgogachacnt-gui-windows-${{ steps.tag.outputs.version }}.zip
+        asset_content_type: application/zip

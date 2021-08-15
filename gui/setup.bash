@@ -1,5 +1,5 @@
-$PythonVersion="3.9.6"
-$PythonPth="python39._pth"
+PythonVersion="3.9.6"
+PythonPth="python39._pth"
 
 wget https://www.python.org/ftp/python/$PythonVersion/python-$PythonVersion-embed-amd64.zip -O python-$PythonVersion-embed-amd64.zip
 wget https://bootstrap.pypa.io/get-pip.py -O get-pip.py

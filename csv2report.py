@@ -172,7 +172,7 @@ def make_data(args):
                 + num_ce_3star + num_ce_4star + num_ce_5star
 
         result = """【聖晶石召喚】{}回
-★3鯖{}-★4鯖{}-★5鯖1{}
+★3鯖{}-★4鯖{}-★5鯖{}
 ★3礼装{}-★4礼装{}-★5礼装{}(うちカレスコ{})
 """.format(num_summon,
            num_servant_3star, num_servant_4star, num_servant_5star,

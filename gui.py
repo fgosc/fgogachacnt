@@ -53,13 +53,11 @@ def run_fgogachacnt(folder, enable_debug):
     return run_command(cmd)
 
 
-def run_csv2report(input, option):
+def run_csv2report(input):
     cmd = [
         "gui\\python\\python",
         "csv2report.py",
     ]
-    if option:
-        cmd.append(option)
     return run_command(cmd, input)
 
 
@@ -90,7 +88,7 @@ def main():
                 enable_debug = False
 
             out = run_fgogachacnt(targetFolder, enable_debug)
-            result = run_csv2report(out, report_option)
+            result = run_csv2report(out)
 
             window[KEY_EXEC_RESULT_OUTPUT].update(result.decode("cp932"))
 

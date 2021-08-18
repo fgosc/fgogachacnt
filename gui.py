@@ -3,6 +3,11 @@ from pathlib import Path
 
 import PySimpleGUIWx as sg
 
+try:
+    from version import version
+except ImportError:
+    version = "develop"
+
 KEY_TARGET_FOLDER = "TargetFolder"
 KEY_EXEC_BUTTON = "ExecButton"
 KEY_ENABLE_DEBUGMODE = "EnableDebugging"
@@ -25,7 +30,7 @@ def make_window(theme):
         [sg.Output(size=(80, 10))],
     ]
 
-    return sg.Window('fgogachacnt FGOガチャ結果スクショ集計', layout)
+    return sg.Window(f'fgogachacnt FGOガチャ結果スクショ集計 {version}', layout)
 
 
 def run_command(cmd, input=None):

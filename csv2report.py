@@ -8,6 +8,10 @@ import argparse
 import fgogachacnt
 from pathlib import Path
 import dataclasses
+import logging
+import contextlib
+
+logger = logging.getLogger(__name__)
 
 Servant_file = Path(__file__).resolve().parent / Path("hash_srv.csv")
 CE_file = Path(__file__).resolve().parent / Path("hash_ce.csv")
@@ -182,83 +186,91 @@ def make_data(args):
     fp_summon = FpSummon()
     sq_summon = SqSummon()
 
-    with args.infile as f:
-        reader = csv.DictReader(f)
-        l = [row for row in reader]
+    f = csv.DictReader(args.infile)
 
-    for i, item in enumerate(l[0].keys()):
-        if l[0]['聖晶石召喚'] == "1":
-            if item == "召喚数":
-                sq_summon.sum_summon += int(l[0][item])
-            if item in servant_rarity[3]:
-                sq_summon.servant_3star += int(l[0][item])
-            elif item in servant_rarity[4]:
-                sq_summon.servant_4star += int(l[0][item])
-            elif item in servant_rarity[5]:
-                sq_summon.servant_5star += int(l[0][item])
-            elif item in ce_rarity[3]:
-                sq_summon.ce_3star += int(l[0][item])
-            elif item in ce_rarity[4]:
-                sq_summon.ce_4star += int(l[0][item])
-            elif item in ce_rarity[5]:
-                sq_summon.ce_5star += int(l[0][item])
+    for row in f:
+        if row['filename'] == "合計":
+            continue
+        if row['聖晶石召喚'] == "1":
+            logger.debug("sq summon")
+            for item in row.keys():
+                if row[item] == "":
+                    continue
+                if item == "召喚数":
+                    sq_summon.sum_summon += int(row[item])
+                if item in servant_rarity[3]:
+                    sq_summon.servant_3star += int(row[item])
+                elif item in servant_rarity[4]:
+                    sq_summon.servant_4star += int(row[item])
+                elif item in servant_rarity[5]:
+                    sq_summon.servant_5star += int(row[item])
+                elif item in ce_rarity[3]:
+                    sq_summon.ce_3star += int(row[item])
+                elif item in ce_rarity[4]:
+                    sq_summon.ce_4star += int(row[item])
+                elif item in ce_rarity[5]:
+                    sq_summon.ce_5star += int(row[item])
 
-            if item == "カレイドスコープ":
-                sq_summon.kalesco += int(l[0][item])
+                if item == "カレイドスコープ":
+                    sq_summon.kalesco += int(row[item])
         else:
-            if item == "召喚数":
-                fp_summon.sum_summon += int(l[0][item])
-            if item in servant_rarity[0]:
-                fp_summon.servant_0star += int(l[0][item])
-            elif item in servant_rarity[1]:
-                fp_summon.servant_1star += int(l[0][item])
-            elif item in servant_rarity[2]:
-                fp_summon.servant_2star += int(l[0][item])
-            elif item in servant_rarity[3]:
-                fp_summon.servant_3star += int(l[0][item])
-            elif item in servant_rarity[4]:
-                fp_summon.servant_4star += int(l[0][item])
+            logger.debug("fp summon")
+            for item in row.keys():
+                if row[item] == "":
+                    continue
+                if item == "召喚数":
+                    fp_summon.sum_summon += int(row[item])
+                if item in servant_rarity[0]:
+                    fp_summon.servant_0star += int(row[item])
+                elif item in servant_rarity[1]:
+                    fp_summon.servant_1star += int(row[item])
+                elif item in servant_rarity[2]:
+                    fp_summon.servant_2star += int(row[item])
+                elif item in servant_rarity[3]:
+                    fp_summon.servant_3star += int(row[item])
+                elif item in servant_rarity[4]:
+                    fp_summon.servant_4star += int(row[item])
 
-            elif item in fgogachacnt.exp_1star:
-                fp_summon.exp_1star += int(l[0][item])
-            elif item in fgogachacnt.exp_2star:
-                fp_summon.exp_2star += int(l[0][item])
-            elif item in fgogachacnt.exp_3star:
-                fp_summon.exp_3star += int(l[0][item])
-            elif item in fgogachacnt.exp_4star:
-                fp_summon.exp_4star += int(l[0][item])
-            elif item in fgogachacnt.exp_5star:
-                fp_summon.exp_5star += int(l[0][item])
+                elif item in fgogachacnt.exp_1star:
+                    fp_summon.exp_1star += int(row[item])
+                elif item in fgogachacnt.exp_2star:
+                    fp_summon.exp_2star += int(row[item])
+                elif item in fgogachacnt.exp_3star:
+                    fp_summon.exp_3star += int(row[item])
+                elif item in fgogachacnt.exp_4star:
+                    fp_summon.exp_4star += int(row[item])
+                elif item in fgogachacnt.exp_5star:
+                    fp_summon.exp_5star += int(row[item])
 
-            elif item in fgogachacnt.status_1star:
-                fp_summon.status_1star += int(l[0][item])
-            elif item in fgogachacnt.status_2star:
-                fp_summon.status_2star += int(l[0][item])
-            elif item in fgogachacnt.status_3star:
-                fp_summon.status_3star += int(l[0][item])
+                elif item in fgogachacnt.status_1star:
+                    fp_summon.status_1star += int(row[item])
+                elif item in fgogachacnt.status_2star:
+                    fp_summon.status_2star += int(row[item])
+                elif item in fgogachacnt.status_3star:
+                    fp_summon.status_3star += int(row[item])
 
-            elif item in ce_rarity[1]:
-                fp_summon.ce_1star += int(l[0][item])
-            elif item in ce_rarity[2]:
-                fp_summon.ce_2star += int(l[0][item])
-            elif item in ce_rarity[3]:
-                fp_summon.ce_3star += int(l[0][item])
-            elif item.startswith("概念礼装EXPカード") and item in ce_rarity[3]:
-                fp_summon.ce_exp_3star += int(l[0][item])
-            elif item.startswith("概念礼装EXPカード") and item in ce_rarity[4]:
-                fp_summon.ce_exp_4star += int(l[0][item])
+                elif item in ce_rarity[1]:
+                    fp_summon.ce_1star += int(row[item])
+                elif item in ce_rarity[2]:
+                    fp_summon.ce_2star += int(row[item])
+                elif item in ce_rarity[3]:
+                    fp_summon.ce_3star += int(row[item])
+                elif item.startswith("概念礼装EXPカード") and item in ce_rarity[3]:
+                    fp_summon.ce_exp_3star += int(row[item])
+                elif item.startswith("概念礼装EXPカード") and item in ce_rarity[4]:
+                    fp_summon.ce_exp_4star += int(row[item])
 
-            elif item in ccode_rarity[1]:
-                fp_summon.ccode_1star += int(l[0][item])
-            elif item in ccode_rarity[2]:
-                fp_summon.ccode_2star += int(l[0][item])
+                elif item in ccode_rarity[1]:
+                    fp_summon.ccode_1star += int(row[item])
+                elif item in ccode_rarity[2]:
+                    fp_summon.ccode_2star += int(row[item])
 
-            if item == "織田信勝【弓】":
-                fp_summon.nobukatsu += int(l[0][item])
-            if item == "アルトリア・ペンドラゴン〔リリィ〕【剣】":
-                fp_summon.lily += int(l[0][item])
-            if item == "ハベトロット【騎】":
-                fp_summon.habetrot += int(l[0][item])
+                if item == "織田信勝【弓】":
+                    fp_summon.nobukatsu += int(row[item])
+                if item == "アルトリア・ペンドラゴン〔リリィ〕【剣】":
+                    fp_summon.lily += int(row[item])
+                if item == "ハベトロット【騎】":
+                    fp_summon.habetrot += int(row[item])
 
     return fp_summon.format() + sq_summon.format()
 
@@ -267,7 +279,18 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('infile', nargs='?', type=argparse.FileType(),
                         default=sys.stdin)
+    parser.add_argument(
+                    '--loglevel', '-l',
+                    choices=('warning', 'debug', 'info'),
+                    default='info'
+                    )
     args = parser.parse_args()
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(name)s <%(filename)s-L%(lineno)s> [%(levelname)s] %(message)s',
+    )
+    logger.setLevel(args.loglevel.upper())
+
     make_rarity()
     result = make_data(args)
     print(result)

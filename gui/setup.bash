@@ -7,14 +7,16 @@ curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 unzip python-$PythonVersion-embed-amd64.zip -d python
 rm "./python/$PythonPth"
 
-./python/python ./get-pip.py
+./python/python.exe ./get-pip.py
 
-./python/Scripts/pip install -r ../requirements.txt
-./python/Scripts/pip install PySimpleGUIWx
+./python/Scripts/pip.exe install -r ../requirements.txt
+./python/Scripts/pip.exe install PySimpleGUIWx
 
 rm python-$PythonVersion-embed-amd64.zip
 rm get-pip.py
 
 cd ..
-./gui/python/python makecard.py
-./gui/python/python makerarity.py
+./gui/python/python.exe makecard.py
+echo "makecard done"
+./gui/python/python.exe makerarity.py
+echo "makerarity done"

@@ -24,10 +24,11 @@ def make_window(theme):
             sg.Checkbox("デバッグ出力を有効にする", default=False, pad=(20, 0), key=KEY_ENABLE_DEBUGMODE),
         ],
         [sg.Submit("実行", key=KEY_EXEC_BUTTON)],
-        [sg.Text("\n実行結果（Twitter投稿用）")],
-        [sg.Multiline(size=(80, 10), key=KEY_EXEC_RESULT_OUTPUT)],
-        [sg.Text("\nログ")],
-        [sg.Output(size=(80, 10))],
+        [sg.Text("\n実行結果")],
+        [sg.Multiline(size=(80, 12), key=KEY_EXEC_RESULT_OUTPUT)],
+        [sg.Text("全パターン出力されます。適切なものを1つ選んで Twitter に投稿してください。")],
+        [sg.Text("\n\nログ")],
+        [sg.Output(size=(80, 12))],
     ]
 
     return sg.Window(f'fgogachacnt FGOガチャ結果スクショ集計 {version}', layout)

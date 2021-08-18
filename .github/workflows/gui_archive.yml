@@ -18,6 +18,10 @@ jobs:
       id: tag
       run: echo "::set-output name=version::$(echo ${{ github.ref }} | sed -e 's/refs\/tags\///')"
 
+    - name: Make version.py
+      run: |-
+        echo 'version = "${{ steps.tag.outputs.version }}"' > version.py
+
     - name: Setup
       run: ./setup.bash
       shell: bash

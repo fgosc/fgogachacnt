@@ -1,3 +1,4 @@
+import argparse
 import subprocess
 from pathlib import Path
 
@@ -12,6 +13,9 @@ KEY_TARGET_FOLDER = "TargetFolder"
 KEY_EXEC_BUTTON = "ExecButton"
 KEY_ENABLE_DEBUGMODE = "EnableDebugging"
 KEY_EXEC_RESULT_OUTPUT = "ResultOutput"
+
+BUNDLED_PYTHON = "gui\\python\\python"
+SYSTEM_PYTHON = "python"
 
 
 def make_window(theme):
@@ -46,9 +50,9 @@ def run_command(cmd, input=None):
     return proc.stdout
 
 
-def run_fgogachacnt(folder, enable_debug):
+def run_fgogachacnt(python_exe, folder, enable_debug=False):
     cmd = [
-        "gui\\python\\python",
+        python_exe,
         "fgogachacnt.py",
         "-f",
         folder,
@@ -59,16 +63,21 @@ def run_fgogachacnt(folder, enable_debug):
     return run_command(cmd)
 
 
-def run_csv2report(input):
+def run_csv2report(python_exe, input):
     cmd = [
-        "gui\\python\\python",
+        python_exe,
         "csv2report.py",
     ]
     return run_command(cmd, input)
 
 
-def main():
+def main(args):
     window = make_window(sg.theme())
+
+    if args.use_system_python:
+        python_exe = SYSTEM_PYTHON
+    else:
+        python_exe = BUNDLED_PYTHON
 
     while True:
         event, values = window.read()
@@ -93,11 +102,17 @@ def main():
             else:
                 enable_debug = False
 
-            out = run_fgogachacnt(targetFolder, enable_debug)
-            result = run_csv2report(out)
+            out = run_fgogachacnt(python_exe, targetFolder, enable_debug)
+            result = run_csv2report(python_exe, out)
 
             window[KEY_EXEC_RESULT_OUTPUT].update(result.decode("cp932"))
 
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-u", "--use-system-python", action="store_true")
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    main()
+    main(parse_args())

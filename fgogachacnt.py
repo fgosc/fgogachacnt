@@ -1222,6 +1222,15 @@ def make_std_item():
             if row[1] in ['1', '2']:
                 ccode.append(row[0])
 
+    std_item = servant \
+               + exp_1star + exp_2star + exp_3star + exp_4star + exp_5star \
+               + status_1star + status_2star + status_3star \
+               + ce \
+               + ccode
+
+    for i in std_item:
+        std_item_dic[i] = 0
+
 
 def get_output(filenames, args):
     """

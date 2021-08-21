@@ -594,9 +594,11 @@ class ScreenShot:
         img_rgb = self.img_rgb_orig[:, lx:width_orig - rx]
 
         _, width = img_rgb.shape[:2]
-        lower_w = np.array([100, 100, 100])
+        lower_w = np.array([80, 80, 80])
         upper_w = np.array([255, 255, 255])
         img_mask_w = cv2.inRange(img_rgb, lower_w, upper_w)
+        if args.debug:
+            cv2.imwrite("img_mask_w.png", img_mask_w)
 
         contours, hierarchy = cv2.findContours(img_mask_w, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -754,7 +756,7 @@ class ScreenShot:
         elif num == 1:
             pts = [(420, 174, 548, 302)]
         else:
-            raise ValueError("カード数認識エラー")
+            raise ValueError("カード数認識エラー: " + str(num))
         return pts
 
     def find_notch(self, img_hsv):

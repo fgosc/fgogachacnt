@@ -1375,7 +1375,7 @@ class EventDrivenRunner:
     def run(self):
         handler = OnCreatedEventHandler(self.processor)
         observer = Observer()
-        observer.schedule(handler, self.path)
+        observer.schedule(handler, self.path, recursive=True)
         observer.start()
 
         try:

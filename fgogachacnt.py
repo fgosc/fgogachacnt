@@ -1245,10 +1245,7 @@ def make_std_item():
         std_item_dic[i] = 0
 
 
-def get_output(filenames, args):
-    """
-    出力内容を作成
-    """
+def initialize():
     calc_dist_local_servant()
     calc_dist_servant()
     calc_dist_local_ce()
@@ -1263,48 +1260,73 @@ def get_output(filenames, args):
     for f in p_temp:
         card_imgs.append(cv2.imread(str(f)))
 
-    csvfieldnames = {'filename': "合計",  '召喚数': "", '聖晶石召喚': ""}  # CSVフィールド名用 key しか使わない
-    wholelist = []
-    outputcsv = []  # 出力
-    prev_itemlist = []  # 重複チェック用
-    num_summon = 0
+    return svm_card, svm_rarity, card_imgs
 
-    for filename in filenames:
-        if args.debug:
+
+class Processor:
+    def __init__(self, svm_card, svm_rarity, card_imgs, args):
+        self.svm_card = svm_card
+        self.svm_rarity = svm_rarity
+        self.card_imgs = card_imgs
+        self.args = args
+        # 重複検出用: 直前の処理結果を保持する
+        self.prev_itemlist = []
+        # 実行結果蓄積用: process() のたびにデータが積みあがっていく
+        self.wholelist = []
+        self.outputlist = []
+        self.num_summon = 0
+
+    def process(self, filename):
+        result = self._process(filename)
+        self.outputlist.append(result)
+
+    def _process(self, filename):
+        if self.args.debug:
             print(filename)
+
         f = Path(filename)
 
-        if f.exists() is False:
-            output = {'filename': str(filename) + ': Not Found'}
-        elif f.suffix.upper() not in ['.PNG', '.JPG', '.JPEG']:
-            output = {'filename': str(filename) + ': Not Supported'}
-        else:
-            img_rgb = imread(filename)
+        if not f.exists():
+            return {'filename': str(filename) + ': Not Found'}
 
-            try:
-                sc = ScreenShot(img_rgb, svm_card, svm_rarity, card_imgs, args)
-                # 戦利品順番ルールに則った対応による出力処理
-                if prev_itemlist == sc.itemlist:
-                    output = ({'filename': str(filename) + ': Duplicate'})
-                else:
-                    wholelist = wholelist + sc.itemlist
-                    output = {'filename': filename}
-                    output.update(sc.allitemdic)
-                    output['召喚数'] = len(sc.itemlist)
-                    output['聖晶石召喚'] = "1" if sc.summon_mode == "SQ" else ""
-                    num_summon = num_summon + sc.num_summon
-                prev_itemlist = sc.itemlist
-            except Exception as e:
-                logger.error(f'{filename}: {e}', exc_info=True)
-                output = ({'filename': str(filename) + ': not valid'})
-        outputcsv.append(output)
+        elif f.suffix.upper() not in ('.PNG', '.JPG', '.JPEG'):
+            return {'filename': str(filename) + ': Not Supported'}
 
-    tmpdic = {'召喚数': num_summon}
-    csvfieldnames.update(tmpdic)
-    std_item_dic.update(dict(Counter(wholelist)))
-    csvfieldnames.update(std_item_dic)
+        img_rgb = imread(filename)
 
-    return csvfieldnames, outputcsv
+        try:
+            sc = ScreenShot(img_rgb, self.svm_card, self.svm_rarity, self.card_imgs, self.args)
+            # 戦利品順番ルールに則った対応による出力処理
+            if self.prev_itemlist == sc.itemlist:
+                return {'filename': str(filename) + ': Duplicate'}
+
+            self.wholelist += sc.itemlist
+            output = {'filename': filename}
+            output.update(sc.allitemdic)
+            output['召喚数'] = len(sc.itemlist)
+            output['聖晶石召喚'] = "1" if sc.summon_mode == "SQ" else ""
+            self.num_summon += sc.num_summon
+            self.prev_itemlist = sc.itemlist
+            return output
+
+        except Exception as e:
+            logger.error(f'{filename}: {e}', exc_info=True)
+            return {'filename': str(filename) + ': not valid'}
+
+    def get_output(self):
+        """
+        出力内容を作成
+        """
+
+        # CSVフィールド名用 key しか使わない
+        csvfieldnames = {'filename': "合計", '召喚数': "", '聖晶石召喚': ""}
+
+        tmpdic = {'召喚数': self.num_summon}
+        csvfieldnames.update(tmpdic)
+        std_item_dic.update(dict(Counter(self.wholelist)))
+        csvfieldnames.update(std_item_dic)
+
+        return csvfieldnames, self.outputlist
 
 
 if __name__ == '__main__':
@@ -1335,7 +1357,17 @@ if __name__ == '__main__':
     else:
         inputs = args.filenames
 
-    csvfieldnames, outputcsv = get_output(inputs, args)
+    svm_card, svm_rarity, card_imgs = initialize()
+    processor = Processor(
+        svm_card=svm_card,
+        svm_rarity=svm_rarity,
+        card_imgs=card_imgs,
+        args=args,
+    )
+    for filename in inputs:
+        processor.process(filename)
+
+    csvfieldnames, outputcsv = processor.get_output()
 
     fnames = csvfieldnames.keys()
     writer = csv.DictWriter(sys.stdout, fieldnames=fnames, lineterminator='\n')

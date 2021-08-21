@@ -603,7 +603,7 @@ class ScreenShot:
         img_rgb = self.img_rgb_orig[:, lx:width_orig - rx]
 
         _, width = img_rgb.shape[:2]
-        lower_w = np.array([80, 80, 80])
+        lower_w = np.array([100, 100, 100])
         upper_w = np.array([255, 255, 255])
         img_mask_w = cv2.inRange(img_rgb, lower_w, upper_w)
         if args.debug:

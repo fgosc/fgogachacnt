@@ -486,6 +486,7 @@ class ScreenShot:
         pts = []
 
         # 下部の判定
+        # 「続けて(10|11)回召喚」を連打するためタップ跡の影響が置きやすい
         for tmpl in card_imgs:
             h, w = tmpl.shape[:2]
             res = cv2.matchTemplate(self.img_rgb[380:420, :], tmpl, cv2.TM_CCOEFF_NORMED)
@@ -507,8 +508,16 @@ class ScreenShot:
             else:
                 if len(pts) == 5:
                     break
-        if (len(pts)) > 0:
+        pts.sort()
+        if len(pts) > 0:
             num_cards = 6 + len(pts)
+            # 誤認識をエラー訂正
+            if len(pts) > 1:
+                x = pts[0][0]
+                card_width = 140
+                for pt in pts[1:]:
+                    num_cards += int((pt[0] - x)/card_width) - 1
+                    x = pt[0]
         else:
             for tmpl in card_imgs:
                 h, w = tmpl.shape[:2]

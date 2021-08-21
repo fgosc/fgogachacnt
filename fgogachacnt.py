@@ -3,14 +3,18 @@
 # Fate/Grand Order のガチャ結果画面のスクショのカードを数え上げます
 #
 
-import cv2
-import numpy as np
 import argparse
 from pathlib import Path
 from collections import Counter
 import csv
 import sys
+import time
 import logging
+
+import cv2
+import numpy as np
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
 logger = logging.getLogger(__name__)
 
@@ -1245,10 +1249,7 @@ def make_std_item():
         std_item_dic[i] = 0
 
 
-def get_output(filenames, args):
-    """
-    出力内容を作成
-    """
+def initialize():
     calc_dist_local_servant()
     calc_dist_servant()
     calc_dist_local_ce()
@@ -1263,48 +1264,143 @@ def get_output(filenames, args):
     for f in p_temp:
         card_imgs.append(cv2.imread(str(f)))
 
-    csvfieldnames = {'filename': "合計",  '召喚数': "", '聖晶石召喚': ""}  # CSVフィールド名用 key しか使わない
-    wholelist = []
-    outputcsv = []  # 出力
-    prev_itemlist = []  # 重複チェック用
-    num_summon = 0
+    return svm_card, svm_rarity, card_imgs
 
-    for filename in filenames:
-        if args.debug:
+
+class Processor:
+    def __init__(self, svm_card, svm_rarity, card_imgs, args):
+        self.svm_card = svm_card
+        self.svm_rarity = svm_rarity
+        self.card_imgs = card_imgs
+        self.args = args
+        # 重複検出用: 直前の処理結果を保持する
+        self.prev_itemlist = []
+        # 実行結果蓄積用: process() のたびにデータが積みあがっていく
+        self.wholelist = []
+        self.outputlist = []
+        self.num_summon = 0
+
+    def process(self, filename):
+        result = self._process(filename)
+        logger.info(f"processed {filename}")
+        self.outputlist.append(result)
+
+    def _process(self, filename):
+        if self.args.debug:
             print(filename)
+
         f = Path(filename)
 
-        if f.exists() is False:
-            output = {'filename': str(filename) + ': Not Found'}
-        elif f.suffix.upper() not in ['.PNG', '.JPG', '.JPEG']:
-            output = {'filename': str(filename) + ': Not Supported'}
-        else:
-            img_rgb = imread(filename)
+        if not f.exists():
+            return {'filename': str(filename) + ': Not Found'}
 
-            try:
-                sc = ScreenShot(img_rgb, svm_card, svm_rarity, card_imgs, args)
-                # 戦利品順番ルールに則った対応による出力処理
-                if prev_itemlist == sc.itemlist:
-                    output = ({'filename': str(filename) + ': Duplicate'})
-                else:
-                    wholelist = wholelist + sc.itemlist
-                    output = {'filename': filename}
-                    output.update(sc.allitemdic)
-                    output['召喚数'] = len(sc.itemlist)
-                    output['聖晶石召喚'] = "1" if sc.summon_mode == "SQ" else ""
-                    num_summon = num_summon + sc.num_summon
-                prev_itemlist = sc.itemlist
-            except Exception as e:
-                logger.error(f'{filename}: {e}', exc_info=True)
-                output = ({'filename': str(filename) + ': not valid'})
-        outputcsv.append(output)
+        elif f.suffix.upper() not in ('.PNG', '.JPG', '.JPEG'):
+            return {'filename': str(filename) + ': Not Supported'}
 
-    tmpdic = {'召喚数': num_summon}
-    csvfieldnames.update(tmpdic)
-    std_item_dic.update(dict(Counter(wholelist)))
-    csvfieldnames.update(std_item_dic)
+        img_rgb = imread(filename)
 
-    return csvfieldnames, outputcsv
+        try:
+            sc = ScreenShot(img_rgb, self.svm_card, self.svm_rarity, self.card_imgs, self.args)
+            # 戦利品順番ルールに則った対応による出力処理
+            if self.prev_itemlist == sc.itemlist:
+                return {'filename': str(filename) + ': Duplicate'}
+
+            self.wholelist += sc.itemlist
+            output = {'filename': filename}
+            output.update(sc.allitemdic)
+            output['召喚数'] = len(sc.itemlist)
+            output['聖晶石召喚'] = "1" if sc.summon_mode == "SQ" else ""
+            self.num_summon += sc.num_summon
+            self.prev_itemlist = sc.itemlist
+            return output
+
+        except Exception as e:
+            logger.error(f'{filename}: {e}', exc_info=True)
+            return {'filename': str(filename) + ': not valid'}
+
+    def get_output(self):
+        """
+        出力内容を作成
+        """
+
+        # CSVフィールド名用 key しか使わない
+        csvfieldnames = {'filename': "合計", '召喚数': "", '聖晶石召喚': ""}
+
+        tmpdic = {'召喚数': self.num_summon}
+        csvfieldnames.update(tmpdic)
+        std_item_dic.update(dict(Counter(self.wholelist)))
+        csvfieldnames.update(std_item_dic)
+
+        return csvfieldnames, self.outputlist
+
+
+class OnCreatedEventHandler(FileSystemEventHandler):
+    """
+    ファイル作成イベントで呼ばれるイベントハンドラ
+    """
+    def __init__(self, processor):
+        super().__init__()
+
+        self.processor = processor
+
+    def on_created(self, event):
+        super().on_created(event)
+        logger.info(f"{event.src_path} created")
+
+        if event.is_directory:
+            logger.info(f"{event.src_path} is a directory, skip")
+            return
+
+        # ファイルコピーの完了まで待つ
+        # https://stackoverflow.com/a/41105283
+        src = Path(event.src_path)
+        filesize = -1
+        while filesize != src.stat().st_size:
+            filesize = src.stat().st_size
+            time.sleep(0.5)
+
+        self.processor.process(event.src_path)
+
+
+class EventDrivenRunner:
+    """
+    指定フォルダーを監視し、ファイルが新しく作成されたらそれを processor に渡す runner.
+
+    監視機構の実現に watchdog を使用する。
+    """
+    def __init__(self, processor, path):
+        self.processor = processor
+        self.path = path
+
+    def run(self):
+        handler = OnCreatedEventHandler(self.processor)
+        observer = Observer()
+        observer.schedule(handler, self.path, recursive=True)
+        observer.start()
+
+        try:
+            while True:
+                time.sleep(0.5)
+
+        except KeyboardInterrupt:
+            pass
+
+        finally:
+            observer.stop()
+            observer.join()
+
+
+class BatchRunner:
+    """
+    初期化時に渡されたファイル群をバッチ処理で processor に処理させる runner.
+    """
+    def __init__(self, processor, filenames):
+        self.processor = processor
+        self.filenames = filenames
+
+    def run(self):
+        for filename in self.filenames:
+            self.processor.process(filename)
 
 
 if __name__ == '__main__':
@@ -1315,9 +1411,13 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--folder', help='フォルダで指定')
     parser.add_argument('-o', '--old', help='2018年8月以前の召喚画面', action='store_true')
     parser.add_argument('-d', '--debug', help='デバッグ情報の出力', action='store_true')
+    parser.add_argument('-w', '--watch', help='フォルダ監視モード', action='store_true')
     parser.add_argument('--version', action='version', version=progname + " " + version)
 
     args = parser.parse_args()    # 引数を解析
+    if args.watch and not args.folder:
+        parser.error("argument -w/--watch must be specified with -f/--folder")
+
     logging.basicConfig(
         level=logging.INFO,
         format='%(name)s <%(filename)s-L%(lineno)s> [%(levelname)s] %(message)s',
@@ -1330,12 +1430,25 @@ if __name__ == '__main__':
     if not CE_dir.is_dir():
         CE_dir.mkdir()
 
-    if args.folder:
-        inputs = [x for x in Path(args.folder).iterdir()]
-    else:
-        inputs = args.filenames
+    svm_card, svm_rarity, card_imgs = initialize()
+    processor = Processor(
+        svm_card=svm_card,
+        svm_rarity=svm_rarity,
+        card_imgs=card_imgs,
+        args=args,
+    )
+    if args.watch:
+        runner = EventDrivenRunner(processor, args.folder)
 
-    csvfieldnames, outputcsv = get_output(inputs, args)
+    elif args.folder:
+        inputs = [x for x in Path(args.folder).iterdir()]
+        runner = BatchRunner(processor, inputs)
+
+    else:
+        runner = BatchRunner(processor, args.filenames)
+
+    runner.run()
+    csvfieldnames, outputcsv = processor.get_output()
 
     fnames = csvfieldnames.keys()
     writer = csv.DictWriter(sys.stdout, fieldnames=fnames, lineterminator='\n')

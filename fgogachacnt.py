@@ -3,14 +3,18 @@
 # Fate/Grand Order のガチャ結果画面のスクショのカードを数え上げます
 #
 
-import cv2
-import numpy as np
 import argparse
 from pathlib import Path
 from collections import Counter
 import csv
 import sys
+import time
 import logging
+
+import cv2
+import numpy as np
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
 logger = logging.getLogger(__name__)
 
@@ -1278,6 +1282,7 @@ class Processor:
 
     def process(self, filename):
         result = self._process(filename)
+        logger.info(f"processed {filename}")
         self.outputlist.append(result)
 
     def _process(self, filename):
@@ -1329,6 +1334,75 @@ class Processor:
         return csvfieldnames, self.outputlist
 
 
+class OnCreatedEventHandler(FileSystemEventHandler):
+    """
+    ファイル作成イベントで呼ばれるイベントハンドラ
+    """
+    def __init__(self, processor):
+        super().__init__()
+
+        self.processor = processor
+
+    def on_created(self, event):
+        super().on_created(event)
+        logger.info(f"{event.src_path} created")
+
+        if event.is_directory:
+            logger.info(f"{event.src_path} is a directory, skip")
+            return
+
+        # ファイルコピーの完了まで待つ
+        # https://stackoverflow.com/a/41105283
+        src = Path(event.src_path)
+        filesize = -1
+        while filesize != src.stat().st_size:
+            filesize = src.stat().st_size
+            time.sleep(0.5)
+
+        self.processor.process(event.src_path)
+
+
+class EventDrivenRunner:
+    """
+    指定フォルダーを監視し、ファイルが新しく作成されたらそれを processor に渡す runner.
+
+    監視機構の実現に watchdog を使用する。
+    """
+    def __init__(self, processor, path):
+        self.processor = processor
+        self.path = path
+
+    def run(self):
+        handler = OnCreatedEventHandler(self.processor)
+        observer = Observer()
+        observer.schedule(handler, self.path)
+        observer.start()
+
+        try:
+            while True:
+                time.sleep(0.5)
+
+        except KeyboardInterrupt:
+            pass
+
+        finally:
+            observer.stop()
+            observer.join()
+
+
+class BatchRunner:
+    """
+    初期化時に渡されたファイル群をバッチ処理で processor に処理させる runner.
+    """
+    def __init__(self, processor, filenames):
+        self.processor = processor
+        self.filenames = filenames
+
+    def run(self):
+        for filename in self.filenames:
+            self.processor.process(filename)
+
+
 if __name__ == '__main__':
     # オプションの解析
     parser = argparse.ArgumentParser(description='FGOの召喚スクショを数えをCSV出力する')
@@ -1337,9 +1411,13 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--folder', help='フォルダで指定')
     parser.add_argument('-o', '--old', help='2018年8月以前の召喚画面', action='store_true')
     parser.add_argument('-d', '--debug', help='デバッグ情報の出力', action='store_true')
+    parser.add_argument('-w', '--watch', help='フォルダ監視モード', action='store_true')
     parser.add_argument('--version', action='version', version=progname + " " + version)
 
     args = parser.parse_args()    # 引数を解析
+    if args.watch and not args.folder:
+        parser.error("argument -w/--watch must be specified with -f/--folder")
+
     logging.basicConfig(
         level=logging.INFO,
         format='%(name)s <%(filename)s-L%(lineno)s> [%(levelname)s] %(message)s',
@@ -1352,11 +1430,6 @@ if __name__ == '__main__':
     if not CE_dir.is_dir():
         CE_dir.mkdir()
 
-    if args.folder:
-        inputs = [x for x in Path(args.folder).iterdir()]
-    else:
-        inputs = args.filenames
-
     svm_card, svm_rarity, card_imgs = initialize()
     processor = Processor(
         svm_card=svm_card,
@@ -1364,9 +1437,17 @@ if __name__ == '__main__':
         card_imgs=card_imgs,
         args=args,
     )
-    for filename in inputs:
-        processor.process(filename)
+    if args.watch:
+        runner = EventDrivenRunner(processor, args.folder)
 
+    elif args.folder:
+        inputs = [x for x in Path(args.folder).iterdir()]
+        runner = BatchRunner(processor, inputs)
+
+    else:
+        runner = BatchRunner(processor, args.filenames)
+
+    runner.run()
     csvfieldnames, outputcsv = processor.get_output()
 
     fnames = csvfieldnames.keys()

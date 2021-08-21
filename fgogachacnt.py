@@ -31,6 +31,8 @@ FP_34Servant_wl = Path(__file__).resolve().parent / Path("fp_34srv_wl.txt")
 FP_12CE_bl = Path(__file__).resolve().parent / Path("fp_12ce_bl.txt")
 FP_3CE_wl = Path(__file__).resolve().parent / Path("fp_3ce_wl.txt")
 hasher = cv2.img_hash.PHash_create()
+tmplate_sq = Path(__file__).resolve().parent / Path("data/misc/saint_quarts.jpg")
+
 
 exp_1star = ['全種火', '剣種火', '槍種火', '弓種火',
              '騎種火', '術種火', '殺種火', '狂種火']
@@ -529,7 +531,7 @@ class ScreenShot:
     def summon_type(self):
         # ガチャの種類を判別
         hight, width = self.img_orig_resize.shape[:2]
-        sq_tmpl = cv2.imread("data/misc/saint_quarts.jpg")
+        sq_tmpl = cv2.imread(str(tmplate_sq))
         res = cv2.matchTemplate(self.img_orig_resize[0:int(hight*1/3), int(width*1/4):int(width*1/2)],
                                 sq_tmpl,
                                 cv2.TM_CCOEFF_NORMED)
@@ -1244,8 +1246,8 @@ def get_output(filenames, args):
     make_std_item()
     svm_card = cv2.ml.SVM_load(str(train_card))
     svm_rarity = cv2.ml.SVM_load(str(train_rarity))
-    card_path = "data/cardimgs"
-    p_temp = list(Path(card_path).glob("*.jpg"))
+    card_path = Path(__file__).resolve().parent / Path("data/cardimgs")
+    p_temp = list(card_path.glob("*.jpg"))
     card_imgs = []
     for f in p_temp:
         card_imgs.append(cv2.imread(str(f)))

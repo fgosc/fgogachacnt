@@ -1483,6 +1483,13 @@ if __name__ == '__main__':
     if not CE_dir.is_dir():
         CE_dir.mkdir()
 
+    if args.watch and args.outfolder:
+        outfolder = Path(args.outfolder)
+        if not outfolder.exists():
+            outfolder.mkdir()
+        if not outfolder.is_dir():
+            raise NotADirectoryError(args.outfolder)
+
     svm_card, svm_rarity, card_imgs = initialize()
     processor = Processor(
         svm_card=svm_card,

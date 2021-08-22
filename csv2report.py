@@ -264,6 +264,9 @@ def make_data(args):
                     fp_summon.ccode_1star += int(row[item])
                 elif item in ccode_rarity[2]:
                     fp_summon.ccode_2star += int(row[item])
+                else:
+                    if item not in ["filename", "召喚数"]:
+                        logger.warning("その他のアイテムを検知: %s", item)
 
                 if item == "織田信勝【弓】":
                     fp_summon.nobukatsu += int(row[item])

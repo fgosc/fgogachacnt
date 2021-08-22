@@ -472,7 +472,7 @@ class ScreenShot:
             cv2.imwrite('game_screen_resize.png', self.img_rgb)
 
         self.summon_type()
-        self.calc_num_summon(card_imgs)
+        self.calc_num_summon(args, card_imgs)
 
         self.img_gray = cv2.cvtColor(self.img_rgb, cv2.COLOR_BGR2GRAY)
         item_pts = self.img2points(self.num_summon)
@@ -488,7 +488,13 @@ class ScreenShot:
         self.itemlist = self.makelist()
         self.allitemdic = dict(Counter(self.itemlist))
 
-    def calc_num_summon(self, card_imgs):
+    def calc_num_summon(self, args, card_imgs):
+        if args.num == '10':
+            self.num_summon = 10
+            return
+        elif args.num == '11':
+            self.num_summon = 11
+            return
         # カードを引いた数を判別
         pts = []
 
@@ -496,7 +502,7 @@ class ScreenShot:
         # 「続けて(10|11)回召喚」を連打するためタップ跡の影響が置きやすい
         for tmpl in card_imgs:
             h, w = tmpl.shape[:2]
-            res = cv2.matchTemplate(self.img_rgb[380:420, :], tmpl, cv2.TM_CCOEFF_NORMED)
+            res = cv2.matchTemplate(self.img_rgb[385:410, :], tmpl, cv2.TM_CCOEFF_NORMED)
             threshold = 0.7
             loc = np.where(res >= threshold)
             for pt in zip(*loc[::-1]):
@@ -516,7 +522,7 @@ class ScreenShot:
                 if len(pts) == 5:
                     break
         pts.sort()
-        # logger.info(pts)
+        logger.info(pts)
         if len(pts) > 0:
             num_cards = 6 + len(pts)
             # 誤認識をエラー訂正
@@ -1451,6 +1457,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='FGOの召喚スクショを数えをCSV出力する')
     # 3. parser.add_argumentで受け取る引数を追加していく
     parser.add_argument('filenames', help='入力ファイル', nargs='*')    # 必須の引数を追加
+    parser.add_argument('-n', '--num', help='召喚数', choices=['auto', '10', '11'], default='auto')
     parser.add_argument('-f', '--folder', help='フォルダで指定')
     parser.add_argument('-o', '--old', help='2018年8月以前の召喚画面', action='store_true')
     parser.add_argument('-d', '--debug', help='デバッグ情報の出力', action='store_true')

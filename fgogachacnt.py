@@ -482,8 +482,7 @@ class ScreenShot:
                 cv2.imwrite('item' + str(i) + '.png', item_img_rgb)
 
         self.itemlist = self.makelist()
-        self.allitemlist = self.makelallist()
-        self.allitemdic = dict(Counter(self.allitemlist))
+        self.allitemdic = dict(Counter(self.itemlist))
 
     def calc_num_summon(self, card_imgs):
         # カードを引いた数を判別
@@ -494,7 +493,7 @@ class ScreenShot:
         for tmpl in card_imgs:
             h, w = tmpl.shape[:2]
             res = cv2.matchTemplate(self.img_rgb[380:420, :], tmpl, cv2.TM_CCOEFF_NORMED)
-            threshold = 0.8
+            threshold = 0.7
             loc = np.where(res >= threshold)
             for pt in zip(*loc[::-1]):
                 # もし座標が衝突しなかったら採用
@@ -513,6 +512,7 @@ class ScreenShot:
                 if len(pts) == 5:
                     break
         pts.sort()
+        # logger.info(pts)
         if len(pts) > 0:
             num_cards = 6 + len(pts)
             # 誤認識をエラー訂正
@@ -564,113 +564,37 @@ class ScreenShot:
             itemlist.append(name)
         return itemlist
 
-    def tempolary_resize(self):
-        '''
-        主に低解像度機種での位置誤差をなくすため拡大する
-        拡大対象は横額縁が無い機種
-        '''
-        TRAINING_IMG_WIDTH = 2048
-        NO_EDGE_RATIO = 0.02
-        height_o, width_o = self.img_rgb_orig.shape[:2]
-
-        lower_w = np.array([210, 100, 200])
-        upper_w = np.array([255, 255, 255])
-        img_mask_w = cv2.inRange(self.img_rgb_orig, lower_w, upper_w)
-
-        closebutton_pts = []
-        contours = cv2.findContours(img_mask_w, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[0]
-        for cnt in contours:
-            area = cv2.contourArea(cnt)
-            if area > 500:
-                ret = cv2.boundingRect(cnt)
-                pts = [ret[0], ret[1], ret[0] + ret[2], ret[1] + ret[3]]
-                if ret[0] < width_o / 4 and ret[1] < height_o / 4 and 2.2 < ret[2] / ret[3] < 2.5:
-                    closebutton_pts.append(pts)
-        closebutton_pts.sort()
-
-        if closebutton_pts[0][0] / width_o < NO_EDGE_RATIO:
-            wscale = (1.0 * width_o) / TRAINING_IMG_WIDTH
-            resizeScale = 1 / wscale
-
-            if resizeScale > 1:
-                self.img_rgb_orig = cv2.resize(self.img_rgb_orig, (0, 0), fx=resizeScale, fy=resizeScale, interpolation=cv2.INTER_CUBIC)
-            else:
-                self.img_rgb_orig = cv2.resize(self.img_rgb_orig, (0, 0), fx=resizeScale, fy=resizeScale, interpolation=cv2.INTER_AREA)
-
     def extract_game_screen(self, args):
         """
         額縁の影響を除去してどのスクショでも同じ画面を切り出す
         """
-        self.tempolary_resize()
-        lx, rx = self.find_notch(self.img_hsv_orig)
-        height, width_orig = self.img_rgb_orig.shape[:2]
-        img_rgb = self.img_rgb_orig[:, lx:width_orig - rx]
-
-        _, width = img_rgb.shape[:2]
-        lower_w = np.array([100, 100, 100])
-        upper_w = np.array([255, 255, 255])
-        img_mask_w = cv2.inRange(img_rgb, lower_w, upper_w)
-        if args.debug:
-            cv2.imwrite("img_mask_w.png", img_mask_w)
-
-        contours, hierarchy = cv2.findContours(img_mask_w, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-        button = {}
-
-        for i, cnt in enumerate(contours):
-            area = cv2.contourArea(cnt)
-            if area > 7000:
-                epsilon = 0.01*cv2.arcLength(cnt, True)
-                approx = cv2.approxPolyDP(cnt, epsilon, True)
-                if len(approx) == 4:
-                    ret = cv2.boundingRect(cnt)
-                    pts = [ret[0], ret[1], ret[0] + ret[2], ret[1] + ret[3]]
-                    if pts[1] > height*3/4 and pts[3] > height*3/4:
-                        if hierarchy[0, i][3] in button:  # 子要素がある場合親要素を消して追加
-                            del button[hierarchy[0, i][3]]
-                            button[i] = pts
-                        else:
-                            button[i] = pts
-
-        button_pts = list(button.values())
-        button_pts.sort()
-        if args.debug:
-            print("認識したボタン位置:", end="")
-            print(button_pts)
-
-        # ボタンの位置から高さ・幅を決めてしまう
-        # ずれがわかりやすいように所持サーヴァントの角で切る ipad 2018 (71,339)
-        # 画像の中心: 1024
-        # (71, 339) (1977, 1315)
-        # ボタンの位置: [[241, 1223, 501, 1315], [641, 1223, 901, 1315],
-        #          [1036, 1223, 1404, 1315], [1543, 1223, 1803, 1315]]
-        button_width = button_pts[-1][2] - button_pts[0][0]
-
-        if args.old:
-            # 連続召喚実装以前の召喚画像の座標
-            cut_x1 = int((width - (2003 - 217)*button_width/(1794 - 424))/2)
-            cut_x2 = width - cut_x1
-            cut_y1 = button_pts[0][-1] - int((1053 - 138)*button_width/(1794 - 424))
-            cut_y2 = button_pts[0][-1]
+        height_orig, width_orig = self.img_rgb_orig.shape[:2]
+        if width_orig/height_orig > 16.02/9:
+            # logger.info("Not 16:9 screen")
+            x1, y1, x2, y2 = self.find_notch(self.img_hsv_orig)
+            # logger.info("screen: (%d, %d), (%d, %d)", x1, y1, width_orig - x2, height_orig - y2)
+            img_rgb = self.img_rgb_orig[y1: height_orig - y2, x1: width_orig - x2]
+            height, width = img_rgb.shape[:2]
+            cut_x1 = int(width/2 - 892/1080*height)
+            cut_x2 = int(width/2 + 892/1080*height)
+            cut_y1 = int(118/1080*height)
+            cut_y2 = int(1033/1080*height)
         else:
-            cut_x1 = int((width - (1977 - 71)*button_width/(1803 - 241))/2)
-            cut_x2 = width - cut_x1
-            cut_y1 = button_pts[0][-1] - int((1315 - 339)*button_width/(1803 - 241))
-            cut_y2 = button_pts[0][-1]
-
+            # logger.debug("16:9 screen")
+            # 上下青帯(横を基準に) 2048 → 1906x976
+            img_rgb = self.img_rgb_orig
+            w_scale = 1906/2048
+            cut_x1 = int((width_orig - width_orig*w_scale)/2)
+            cut_x2 = width_orig - cut_x1
+            cut_y1 = int(height_orig/2 - width_orig*429/2048)
+            cut_y2 = int(height_orig/2 + width_orig*547/2048)
+        # logger.info(cut_x1)
+        # logger.info(cut_x2)
+        # logger.info(cut_y1)
+        # logger.info(cut_y2)
         gamescreen = img_rgb[cut_y1:cut_y2, cut_x1:cut_x2]
 
         return gamescreen
-
-    def makelallist(self):
-        """
-        アイテムを出力
-        """
-        itemlist = []
-        for i, item in enumerate(self.items):
-            name = item.name
-            itemlist.append(name + "")
-        return itemlist
 
     def fitpts(self, pts):
         """
@@ -780,26 +704,40 @@ class ScreenShot:
 
         height, width = img_hsv.shape[:2]
         target_color = 0
-        for i in range(edge_width):
-            img_hsv_x = img_hsv[:, i:i + 1]
+        for lx in range(edge_width):
+            img_hsv_x = img_hsv[:, lx:lx + 1]
             # ヒストグラムを計算
             hist = cv2.calcHist([img_hsv_x], [0], None, [256], [0, 256])
             # 最小値・最大値・最小値の位置・最大値の位置を取得
             _, maxVal, _, maxLoc = cv2.minMaxLoc(hist)
-            if not (maxLoc[1] == target_color and maxVal > height * 0.9):
+            if not (maxLoc[1] == target_color and maxVal > height * 0.4):
                 break
-        lx = i
-        for j in range(edge_width):
-            img_hsv_x = img_hsv[:, width - j - 1: width - j]
+        for ty in range(edge_width):
+            img_hsv_y = img_hsv[ty: ty + 1, :]
+            # ヒストグラムを計算
+            hist = cv2.calcHist([img_hsv_y], [0], None, [256], [0, 256])
+            # 最小値・最大値・最小値の位置・最大値の位置を取得
+            _, maxVal, _, maxLoc = cv2.minMaxLoc(hist)
+            if not (maxLoc[1] == target_color and maxVal > width * 0.4):
+                break
+        for rx in range(edge_width):
+            img_hsv_x = img_hsv[:, width - rx - 1: width - rx]
             # ヒストグラムを計算
             hist = cv2.calcHist([img_hsv_x], [0], None, [256], [0, 256])
             # 最小値・最大値・最小値の位置・最大値の位置を取得
             _, maxVal, _, maxLoc = cv2.minMaxLoc(hist)
-            if not (maxLoc[1] == target_color and maxVal > height * 0.9):
+            if not (maxLoc[1] == target_color and maxVal > height * 0.4):
                 break
-        rx = j
+        for by in range(edge_width):
+            img_hsv_y = img_hsv[height - by - 1: height - by, :]
+            # ヒストグラムを計算
+            hist = cv2.calcHist([img_hsv_y], [0], None, [256], [0, 256])
+            # 最小値・最大値・最小値の位置・最大値の位置を取得
+            _, maxVal, _, maxLoc = cv2.minMaxLoc(hist)
+            if not (maxLoc[1] == target_color and maxVal > width * 0.4):
+                break
 
-        return lx, rx
+        return lx, ty, rx, by
 
 
 class Item:

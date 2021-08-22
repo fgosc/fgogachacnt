@@ -4,12 +4,16 @@
 #
 
 import argparse
-from pathlib import Path
 from collections import Counter
 import csv
+import dataclasses
+from datetime import datetime, timezone
+import json
+import logging
+from pathlib import Path
 import sys
 import time
-import logging
+from typing import Any, Dict, List, Optional, Union
 
 import cv2
 import numpy as np
@@ -1205,81 +1209,109 @@ def initialize():
     return svm_card, svm_rarity, card_imgs
 
 
+@dataclasses.dataclass
+class ProcessResult:
+    filename: str
+    success: bool
+    timestamp: datetime
+    summon_mode: str
+    items: List[str]
+    message: str
+    cause: str
+
+    def __str__(self) -> str:
+        return str(dataclasses.asdict(self))
+
+    def as_dict(self) -> Dict[str, Any]:
+        return dataclasses.asdict(self)
+
+
 class Processor:
     def __init__(self, svm_card, svm_rarity, card_imgs, args):
         self.svm_card = svm_card
         self.svm_rarity = svm_rarity
         self.card_imgs = card_imgs
         self.args = args
-        # 重複検出用: 直前の処理結果を保持する
-        self.prev_itemlist = []
-        # 実行結果蓄積用: process() のたびにデータが積みあがっていく
-        self.wholelist = []
-        self.outputlist = []
-        self.num_summon = 0
 
-    def process(self, filename):
+    def process(self, filename) -> ProcessResult:
         result = self._process(filename)
         logger.info(f"processed {filename}")
-        self.outputlist.append(result)
+        return result
 
-    def _process(self, filename):
-        if self.args.debug:
-            print(filename)
-
+    def _process(self, filename) -> ProcessResult:
         f = Path(filename)
 
         if not f.exists():
-            return {'filename': str(filename) + ': Not Found'}
+            return self._make_result(
+                filename=filename,
+                success=False,
+                message="not found",
+            )
 
         elif f.suffix.upper() not in ('.PNG', '.JPG', '.JPEG'):
-            return {'filename': str(filename) + ': Not Supported'}
+            return self._make_result(
+                filename=filename,
+                success=False,
+                message="not supported",
+            )
 
-        img_rgb = imread(filename)
+        img = imread(filename)
 
         try:
-            sc = ScreenShot(img_rgb, self.svm_card, self.svm_rarity, self.card_imgs, self.args)
-            # 戦利品順番ルールに則った対応による出力処理
-            if self.prev_itemlist == sc.itemlist:
-                return {'filename': str(filename) + ': Duplicate'}
-
-            self.wholelist += sc.itemlist
-            output = {'filename': filename}
-            output.update(sc.allitemdic)
-            output['召喚数'] = len(sc.itemlist)
-            output['聖晶石召喚'] = "1" if sc.summon_mode == "SQ" else ""
-            self.num_summon += sc.num_summon
-            self.prev_itemlist = sc.itemlist
-            return output
+            sc = ScreenShot(
+                img,
+                self.svm_card,
+                self.svm_rarity,
+                self.card_imgs,
+                self.args,
+            )
+            return self._make_result(
+                filename=filename,
+                success=True,
+                summon_mode=sc.summon_mode,
+                items=tuple(sc.itemlist),
+            )
 
         except Exception as e:
             logger.error(f'{filename}: {e}', exc_info=True)
-            return {'filename': str(filename) + ': not valid'}
+            return self._make_result(
+                filename=filename,
+                success=False,
+                message="not valid",
+                cause=str(e),
+            )
 
-    def get_output(self):
-        """
-        出力内容を作成
-        """
+    def _make_result(self, filename, success,
+        summon_mode="", message="", items=(), cause="") -> ProcessResult:
 
-        # CSVフィールド名用 key しか使わない
-        csvfieldnames = {'filename': "合計", '召喚数': "", '聖晶石召喚': ""}
+        return ProcessResult(
+            filename=str(filename),
+            success=success,
+            timestamp=datetime.now(tz=timezone.utc),
+            summon_mode=summon_mode,
+            message=message,
+            items=items,
+            cause=cause,
+        )
 
-        tmpdic = {'召喚数': self.num_summon}
-        csvfieldnames.update(tmpdic)
-        std_item_dic.update(dict(Counter(self.wholelist)))
-        csvfieldnames.update(std_item_dic)
 
-        return csvfieldnames, self.outputlist
+def datetime_serializer(obj):
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    raise TypeError(f"{obj} is not JSON serializable")
 
 
 class OnCreatedEventHandler(FileSystemEventHandler):
     """
-    ファイル作成イベントで呼ばれるイベントハンドラ
+    ファイル作成イベントで呼ばれるイベントハンドラ。
+
+    イベントを処理するたびに、その結果を output_path の下に json ファイルで出力する。
     """
-    def __init__(self, processor):
+    def __init__(self, processor: Processor, output_path: Path):
         super().__init__()
 
-        self.processor = processor
+        self.processor: Processor = processor
+        self.output_path: Path = output_path
 
     def on_created(self, event):
         super().on_created(event)
@@ -1297,7 +1329,14 @@ class OnCreatedEventHandler(FileSystemEventHandler):
             filesize = src.stat().st_size
             time.sleep(0.5)
 
-        self.processor.process(event.src_path)
+        result = self.processor.process(event.src_path)
+        logger.debug(result)
+
+        ts = result.timestamp.astimezone()
+        outfile = self.output_path / f"{ts:%Y%m%d_%H%M%S_%f}.json"
+
+        with open(outfile, "w", encoding="utf-8") as fp:
+            json.dump(result.as_dict(), fp, ensure_ascii=False, indent=2, default=datetime_serializer)
 
 
 class EventDrivenRunner:
@@ -1306,14 +1345,21 @@ class EventDrivenRunner:
 
     監視機構の実現に watchdog を使用する。
     """
-    def __init__(self, processor, path):
-        self.processor = processor
-        self.path = path
+    def __init__(self,
+        processor: Processor,
+        watch_path: Union[str, Path],
+        output_path: Union[str, Path],
+    ):
+        self.processor: Processor = processor
+        self.watch_path: Path = Path(watch_path)
+        self.output_path: Path = Path(output_path)
 
     def run(self):
-        handler = OnCreatedEventHandler(self.processor)
+        handler = OnCreatedEventHandler(self.processor, self.output_path)
         observer = Observer()
-        observer.schedule(handler, self.path, recursive=True)
+        observer.schedule(handler, self.watch_path, recursive=True)
+        logger.info(f"start to watch: {self.watch_path}")
+        logger.info(f"output folder: {self.output_path}")
         observer.start()
 
         try:
@@ -1327,18 +1373,77 @@ class EventDrivenRunner:
             observer.stop()
             observer.join()
 
+    def get_results(self) -> Optional[List[ProcessResult]]:
+        return None
+
 
 class BatchRunner:
     """
     初期化時に渡されたファイル群をバッチ処理で processor に処理させる runner.
     """
-    def __init__(self, processor, filenames):
-        self.processor = processor
-        self.filenames = filenames
+    def __init__(self, processor: Processor, filenames: List[Union[str, Path]]):
+        self.processor: Processor = processor
+        self.filenames: List[Union[str, Path]] = filenames
+        self.results: List[ProcessResult] = []
 
     def run(self):
         for filename in self.filenames:
-            self.processor.process(filename)
+            result = self.processor.process(filename)
+            logger.debug(result)
+            self.results.append(result)
+
+    def get_results(self) -> Optional[List[ProcessResult]]:
+        return self.results
+
+
+class SummaryBuilder:
+    """
+    ProcessResult のリストを加工してサマリにする builder.
+    """
+    def __init__(self, results: List[ProcessResult]):
+        self.results: List[ProcessResult] = results
+
+    def as_csv(self, writer):
+        num_summon = len([1 for r in self.results if r.success])
+        # フラット化
+        # [(a, b, c), (d, e), (f, g)] => [a, b, c, d, e, f, g, h]
+        whole_items = [e for r in self.results if r.success for e in r.items]
+
+        # CSVフィールド名用 key しか使わない
+        csvfieldnames = {"filename": "合計", "召喚数": num_summon, "聖晶石召喚": ""}
+        std_item_dic.update(dict(Counter(whole_items)))
+        csvfieldnames.update(std_item_dic)
+
+        outputcsv = []
+        prev = None
+
+        for result in self.results:
+            if not result.success:
+                d = {"filename": f"{result.filename}: {result.message}"}
+                outputcsv.append(d)
+                continue
+
+            if result.items == prev:
+                d = {"filename": f"{result.filename}: duplicate"}
+                outputcsv.append(d)
+                continue
+
+            d = {
+                "filename": result.filename,
+                "召喚数": len(result.items),
+                "聖晶石召喚": "1" if result.summon_mode == "SQ" else "",
+            }
+            d.update(dict(Counter(result.items)))
+            prev = result.items
+            outputcsv.append(d)
+
+        fnames = csvfieldnames.keys()
+        csvwriter = csv.DictWriter(writer, fieldnames=fnames, lineterminator="\n")
+        csvwriter.writeheader()
+        if len(outputcsv) > 1:  # ファイル一つのときは合計値は出さない
+            csvwriter.writerow(csvfieldnames)
+        for o in outputcsv:
+            csvwriter.writerow(o)
 
 
 if __name__ == '__main__':
@@ -1350,14 +1455,24 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--old', help='2018年8月以前の召喚画面', action='store_true')
     parser.add_argument('-d', '--debug', help='デバッグ情報の出力', action='store_true')
     parser.add_argument('-w', '--watch', help='フォルダ監視モード', action='store_true')
+    parser.add_argument('-of', '--outfolder', help='処理結果JSON出力先')
     parser.add_argument('--version', action='version', version=progname + " " + version)
 
     args = parser.parse_args()    # 引数を解析
     if args.watch and not args.folder:
         parser.error("argument -w/--watch must be specified with -f/--folder")
+    if args.watch and not args.outfolder:
+        parser.error("argument -w/--watch must be specified with -of/--outfolder")
+    if args.folder and args.outfolder and args.folder == args.outfolder:
+        parser.error("folder must be different from outfolder")
+
+    if args.debug:
+        loglevel = logging.DEBUG
+    else:
+        loglevel = logging.INFO
 
     logging.basicConfig(
-        level=logging.INFO,
+        level=loglevel,
         format='%(name)s <%(filename)s-L%(lineno)s> [%(levelname)s] %(message)s',
     )
 
@@ -1368,6 +1483,13 @@ if __name__ == '__main__':
     if not CE_dir.is_dir():
         CE_dir.mkdir()
 
+    if args.watch and args.outfolder:
+        outfolder = Path(args.outfolder)
+        if not outfolder.exists():
+            outfolder.mkdir()
+        if not outfolder.is_dir():
+            raise NotADirectoryError(args.outfolder)
+
     svm_card, svm_rarity, card_imgs = initialize()
     processor = Processor(
         svm_card=svm_card,
@@ -1376,7 +1498,7 @@ if __name__ == '__main__':
         args=args,
     )
     if args.watch:
-        runner = EventDrivenRunner(processor, args.folder)
+        runner = EventDrivenRunner(processor, args.folder, args.outfolder)
 
     elif args.folder:
         inputs = [x for x in Path(args.folder).iterdir()]
@@ -1386,12 +1508,8 @@ if __name__ == '__main__':
         runner = BatchRunner(processor, args.filenames)
 
     runner.run()
-    csvfieldnames, outputcsv = processor.get_output()
+    results = runner.get_results()
 
-    fnames = csvfieldnames.keys()
-    writer = csv.DictWriter(sys.stdout, fieldnames=fnames, lineterminator='\n')
-    writer.writeheader()
-    if len(outputcsv) > 1:  # ファイル一つのときは合計値は出さない
-        writer.writerow(csvfieldnames)
-    for o in outputcsv:
-        writer.writerow(o)
+    if results:
+        sg = SummaryBuilder(runner.results)
+        sg.as_csv(sys.stdout)

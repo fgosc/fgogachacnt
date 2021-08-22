@@ -1335,7 +1335,7 @@ class OnCreatedEventHandler(FileSystemEventHandler):
         ts = result.timestamp.astimezone()
         outfile = self.output_path / f"{ts:%Y%m%d_%H%M%S_%f}.json"
 
-        with open(outfile, "w") as fp:
+        with open(outfile, "w", encoding="utf-8") as fp:
             json.dump(result.as_dict(), fp, ensure_ascii=False, indent=2, default=datetime_serializer)
 
 

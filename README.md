@@ -81,7 +81,7 @@ $ python makerarity.py
 ## コマンドライン版
 
 ```
-usage: fgogachacnt.py [-h] [-f FOLDER] [-o] [-d] [--version] [filenames ...]
+usage: fgogachacnt.py [-h] [-n {auto,10,11}] [-f FOLDER] [-o] [-d] [-w] [-of OUTFOLDER] [--version] [filenames ...]
 
 FGOの召喚スクショを数えをCSV出力する
 
@@ -90,12 +90,17 @@ positional arguments:
 
 optional arguments:
   -h, --help            show this help message and exit
+  -n {auto,10,11}, --num {auto,10,11}
+                        召喚数
   -f FOLDER, --folder FOLDER
                         フォルダで指定
   -o, --old             2018年8月以前の召喚画面
   -d, --debug           デバッグ情報の出力
+  -w, --watch           フォルダ監視モード
+  -of OUTFOLDER, --outfolder OUTFOLDER
+                        処理結果JSON出力先
   --version             show program's version number and exit
-  ```
+```
 
 # 実行例
 ## スクショ処理から召喚報告まで

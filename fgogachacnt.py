@@ -1333,7 +1333,7 @@ class OnCreatedEventHandler(FileSystemEventHandler):
         filesize = -1
         while filesize != src.stat().st_size:
             filesize = src.stat().st_size
-            time.sleep(0.5)
+            time.sleep(0.1)
 
         result = self.processor.process(event.src_path)
         logger.debug(result)

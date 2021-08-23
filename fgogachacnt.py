@@ -522,7 +522,7 @@ class ScreenShot:
                 if len(pts) == 5:
                     break
         pts.sort()
-        logger.info(pts)
+        # logger.info(pts)
         if len(pts) > 0:
             num_cards = 6 + len(pts)
             # 誤認識をエラー訂正

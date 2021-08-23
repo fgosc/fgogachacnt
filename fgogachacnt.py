@@ -522,7 +522,7 @@ class ScreenShot:
                 if len(pts) == 5:
                     break
         pts.sort()
-        logger.info(pts)
+        # logger.info(pts)
         if len(pts) > 0:
             num_cards = 6 + len(pts)
             # 誤認識をエラー訂正
@@ -1333,7 +1333,7 @@ class OnCreatedEventHandler(FileSystemEventHandler):
         filesize = -1
         while filesize != src.stat().st_size:
             filesize = src.stat().st_size
-            time.sleep(0.5)
+            time.sleep(0.1)
 
         result = self.processor.process(event.src_path)
         logger.debug(result)
@@ -1451,6 +1451,10 @@ class SummaryBuilder:
         for o in outputcsv:
             csvwriter.writerow(o)
 
+    def as_json(self, writer):
+        data: List[Dict[str, Any]] = [r.as_dict() for r in self.results]
+        json.dump(data, writer, ensure_ascii=False, default=datetime_serializer)
+
 
 if __name__ == '__main__':
     # オプションの解析
@@ -1463,6 +1467,7 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--debug', help='デバッグ情報の出力', action='store_true')
     parser.add_argument('-w', '--watch', help='フォルダ監視モード', action='store_true')
     parser.add_argument('-of', '--outfolder', help='処理結果JSON出力先')
+    parser.add_argument('--json', help='JSON形式で出力', action='store_true')
     parser.add_argument('--version', action='version', version=progname + " " + version)
 
     args = parser.parse_args()    # 引数を解析
@@ -1519,4 +1524,7 @@ if __name__ == '__main__':
 
     if results:
         sg = SummaryBuilder(runner.results)
-        sg.as_csv(sys.stdout)
+        if args.json:
+            sg.as_json(sys.stdout)
+        else:
+            sg.as_csv(sys.stdout)

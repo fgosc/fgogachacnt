@@ -817,7 +817,7 @@ class Item:
         # 既存のアイテムとの距離を比較
         for i in dist_ce.keys():
             d = hasher.compare(hash_item, dist_ce[i])
-            if d <= 17:  # 18以上にすると誤認識あり
+            if d <= 19:  # 18以上にすると誤認識あり
                 itemfiles[i] = d
         if len(itemfiles) > 0:
             itemfiles = sorted(itemfiles.items(), key=lambda x: x[1])

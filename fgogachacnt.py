@@ -851,8 +851,9 @@ class Item:
         # 既存のアイテムとの距離を比較
         for i in dist_ccode.keys():
             d = hasher.compare(hash_item, dist_ccode[i])
-            if d <= 20:  # 15だとエラー有り
+            if d <= 30:  # 15だとエラー有り
                 itemfiles[i] = d
+        logger.info(itemfiles)
         if len(itemfiles) > 0:
             itemfiles = sorted(itemfiles.items(), key=lambda x: x[1])
             item = next(iter(itemfiles))

@@ -871,7 +871,7 @@ class Item:
         # 既存のアイテムとの距離を比較
         for i in dist_exp.keys():
             d = hasher.compare(hash_item, dist_exp[i])
-            if d <= 15:
+            if d <= 20:
                 itemfiles[i] = d
         if len(itemfiles) > 0:
             itemfiles = sorted(itemfiles.items(), key=lambda x: x[1])

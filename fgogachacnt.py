@@ -853,7 +853,6 @@ class Item:
             d = hasher.compare(hash_item, dist_ccode[i])
             if d <= 30:  # 15だとエラー有り
                 itemfiles[i] = d
-        logger.info(itemfiles)
         if len(itemfiles) > 0:
             itemfiles = sorted(itemfiles.items(), key=lambda x: x[1])
             item = next(iter(itemfiles))

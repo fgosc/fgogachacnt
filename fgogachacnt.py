@@ -822,6 +822,9 @@ class Item:
         if len(itemfiles) > 0:
             itemfiles = sorted(itemfiles.items(), key=lambda x: x[1])
             item = next(iter(itemfiles))
+            if '_' in item[0]:
+                # hashの定義が複数あるアイテムの場合
+                return item[0].split("_")[0]
             return item[0]
         # 自動変換された礼装の判定
         hash_item = hasher.compute(self.img_rgb[35:77, 40:88])  # 画像の距離

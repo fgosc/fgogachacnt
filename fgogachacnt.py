@@ -500,9 +500,13 @@ class ScreenShot:
 
         # 下部の判定
         # 「続けて(10|11)回召喚」を連打するためタップ跡の影響が置きやすい
+
         for tmpl in card_imgs:
             h, w = tmpl.shape[:2]
-            res = cv2.matchTemplate(self.img_rgb[385:410, :], tmpl, cv2.TM_CCOEFF_NORMED)
+            tmpimg = self.img_rgb[385:410, :]
+            h2, w2 = tmpimg.shape[:2]
+            im_gray = cv2.cvtColor(tmpimg, cv2.COLOR_BGR2GRAY)
+            res = cv2.matchTemplate(im_gray, tmpl, cv2.TM_CCOEFF_NORMED)
             threshold = 0.7
             loc = np.where(res >= threshold)
             for pt in zip(*loc[::-1]):
@@ -515,23 +519,41 @@ class ScreenShot:
                         break
                 if not flag_intersect:
                     pts.append(area_a)
+            # 646, 9, 776, 22
             if self.summon_mode == "FP":
                 if len(pts) == 4:
                     break
             else:
                 if len(pts) == 5:
                     break
+
+        # img_tmp = tmpimg[9:22, 646:776]
+        # cv2.imshow('image',img_tmp)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+        # cv2.imwrite("cardimg.png", img_tmp)
         pts.sort()
-        # logger.info(pts)
         if len(pts) > 0:
-            num_cards = 6 + len(pts)
-            # 誤認識をエラー訂正
-            if len(pts) > 1:
-                x = pts[0][0]
-                card_width = 140
-                for pt in pts[1:]:
-                    num_cards += int((pt[0] - x)/card_width) - 1
-                    x = pt[0]
+            # # 誤認識をエラー訂正
+            # if len(pts) > 1:
+            #     x = pts[0][0]
+            #     card_width = 140
+            #     for pt in pts[1:]:
+            #         num_cards += int((pt[0] - x)/card_width) - 1
+            #         x = pt[0]
+            # 非対称の補正
+            # 中央より左側の数
+            num_x2_right = 0
+            num_x1_left = 0
+            for pt in pts:
+                if pt[2] < w2/2:
+                    num_x2_right += 1
+                if pt[0] > w2/2:
+                    num_x1_left += 1
+                if pt[0] < w2/2 and pt[2] > w2/2:
+                    num_x1_left += 0.5
+                    num_x2_right += 0.5
+            num_cards = 6 + max(num_x2_right*2, num_x1_left*2, len(pts))
         else:
             for tmpl in card_imgs:
                 h, w = tmpl.shape[:2]
@@ -1179,6 +1201,8 @@ def make_std_item():
     with open(CE_dist_file, encoding='UTF-8') as f:
         reader = csv.reader(f)
         for row in reader:
+            if '_' in row[0]:
+                continue
             if row[1] in ['1', '2'] and row[0] not in bl_ce:
                 ce.append(row[0])
             elif row[1] in ['3'] and row[0] in wl_ce:
@@ -1213,7 +1237,7 @@ def initialize():
     p_temp = list(card_path.glob("*.jpg"))
     card_imgs = []
     for f in p_temp:
-        card_imgs.append(cv2.imread(str(f)))
+        card_imgs.append(cv2.imread(str(f), 0))
 
     return svm_card, svm_rarity, card_imgs
 

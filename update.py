@@ -61,7 +61,8 @@ servant_class = {'saber':'剣',
                  'moonCancer':'月',
                  'foreigner':'降',
                  'pretender':'偽',
-                 'beastIV':'Ⅳ'}
+                 'beastIV':'Ⅳ',
+                 'beast':'獣'}
     
 def compute_hash_inner(img_rgb):
     img = img_rgb[34:104,:]    

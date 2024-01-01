@@ -46,6 +46,7 @@ class FpSummon():
     ce_exp_3star: int = 0
     ce_exp_4star: int = 0
 
+    nobukatsu: int = 0
     anning: int = 0
     lily: int = 0
     habetrot: int = 0
@@ -80,10 +81,9 @@ class FpSummon():
         if summon_diff > 0:
             result += "その他" + str(summon_diff) + "\n"
 
-        result += "#FGO_FP召喚報告"
+        result += "#FGO_FP召喚報告\n"
 
         result += """
-
 【まんわかFP召喚】{}回
 鯖: ★0_{}-★1_{}(アニング{})-★2_{}-★3_{}-★4_{}(リリィ{},ハベ{})
 種火: ★1_{}-★2_{}-★3_{}-★4_{}-★5_{}
@@ -92,6 +92,33 @@ class FpSummon():
 コード: ★1_{}-★2_{}
 """.format(self.sum_summon,
             self.servant_0star, self.servant_1star, self.anning, self.servant_2star, self.servant_3star, self.servant_4star, self.lily, self.habetrot,
+            self.exp_1star, self.exp_2star, self.exp_3star, self.exp_4star, self.exp_5star,
+            self.status_1star, self.status_2star, self.status_3star,
+            self.ce_1star, self.ce_2star, self.ce_3star, self.ce_exp_3star, self.ce_exp_4star,
+            self.ccode_1star, self.ccode_2star)
+
+        num_summon = self.servant_0star + self.servant_1star + self.servant_2star \
+                     + self.servant_3star + self.servant_4star \
+                     + self.exp_1star + self.exp_2star + self.exp_3star \
+                     + self.exp_4star + self.exp_5star \
+                     + self.status_1star + self.status_2star + self.status_3star \
+                     + self.ce_1star + self.ce_2star + self.ce_3star + self.ce_exp_3star + self.ce_exp_4star \
+                     + self.ccode_1star + self.ccode_2star
+        summon_diff = self.sum_summon - num_summon
+        if summon_diff > 0:
+            result += "その他" + str(summon_diff) + "\n"
+
+        result += "#FGO_FP召喚報告\n"
+
+        result += """
+【邪馬台国FP召喚】{}回
+鯖: ★0_{}-★1_{}(信勝{})-★2_{}-★3_{}-★4_{}(リリィ{},ハベ{})
+種火: ★1_{}-★2_{}-★3_{}-★4_{}-★5_{}
+フォウ: ★1_{}-★2_{}-★3_{}
+礼装: ★1_{}-★2_{}-★3_{}-★3EXP_{}-★4EXP_{}
+コード: ★1_{}-★2_{}
+""".format(self.sum_summon,
+            self.servant_0star, self.servant_1star, self.nobukatsu, self.servant_2star, self.servant_3star, self.servant_4star, self.lily, self.habetrot,
             self.exp_1star, self.exp_2star, self.exp_3star, self.exp_4star, self.exp_5star,
             self.status_1star, self.status_2star, self.status_3star,
             self.ce_1star, self.ce_2star, self.ce_3star, self.ce_exp_3star, self.ce_exp_4star,
@@ -268,7 +295,9 @@ def make_data(args):
                     if item not in ["filename", "召喚数"]:
                         logger.warning("その他のアイテムを検知: %s", item)
 
-                if item == "メアリー・アニング【槍】":
+                if item == "メアリー・アニング【織田信勝】":
+                    fp_summon.nobukatsu += int(row[item])
+                if item == "メアリー・アニング【弓】":
                     fp_summon.anning += int(row[item])
                 if item == "アルトリア・ペンドラゴン〔リリィ〕【剣】":
                     fp_summon.lily += int(row[item])

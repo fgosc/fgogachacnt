@@ -295,9 +295,9 @@ def make_data(args):
                     if item not in ["filename", "召喚数"]:
                         logger.warning("その他のアイテムを検知: %s", item)
 
-                if item == "メアリー・アニング【織田信勝】":
+                if item == "織田信勝【弓】":
                     fp_summon.nobukatsu += int(row[item])
-                if item == "メアリー・アニング【弓】":
+                if item == "メアリー・アニング【槍】":
                     fp_summon.anning += int(row[item])
                 if item == "アルトリア・ペンドラゴン〔リリィ〕【剣】":
                     fp_summon.lily += int(row[item])

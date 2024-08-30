@@ -6,7 +6,7 @@ authors = ["fgophi", "max747"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-opencv-contrib-python = "^4.5.3"
+opencv-contrib-python = "^4.8.1"
 watchdog = "^2.1.4"
 
 [tool.poetry.dev-dependencies]

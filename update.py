@@ -62,7 +62,10 @@ servant_class = {'saber':'剣',
                  'foreigner':'降',
                  'pretender':'偽',
                  'beastIV':'Ⅳ',
-                 'beast':'獣'}
+                 'beast':'獣',
+                 'beastEresh':'獣',
+                 'uOlgaMarieFlareCollection':'フレアマリー',
+                 'uOlgaMarieAquaCollection':'アクアマリー'}
     
 def compute_hash_inner(img_rgb):
     img = img_rgb[34:104,:]    
@@ -145,6 +148,10 @@ def make_servant_data():
         if name == "哪吒": # "Windows の cp932 でエラーになる問題
             name = "ナタ" 
         b = name.encode('cp932', "ignore")
+        if servant["collectionNo"] == 424:
+            name = "ザビ男"
+        elif  servant["collectionNo"] == 425:
+            name = "ザビ子"
         # ここにファイルから召喚除外礼装を読み込む
         # イベント交換(ドロップ)礼装、マナプリ交換礼装
         distribution = False

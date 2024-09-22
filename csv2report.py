@@ -50,6 +50,8 @@ class FpSummon():
     anning: int = 0
     lily: int = 0
     habetrot: int = 0
+    xavio: int = 0
+    xaviko: int = 0
 
     ccode_1star: int = 0
     ccode_2star: int = 0
@@ -58,13 +60,14 @@ class FpSummon():
 
     def format(self):
         result = """【フレンドポイント召喚】{}回
-鯖: ★0_{}-★1_{}-★2_{}-★3_{}-★4_{}(リリィ{},ハベ{})
+鯖: ★0_{}-★1_{}-★2_{}-★3_{}-★4_{}(リリィ{},ハベ{},ザビ男{},ザビ子{})
 種火: ★1_{}-★2_{}-★3_{}-★4_{}-★5_{}
 フォウ: ★1_{}-★2_{}-★3_{}
 礼装: ★1_{}-★2_{}-★3_{}
 コード: ★1_{}-★2_{}
 """.format(self.sum_summon,
-            self.servant_0star, self.servant_1star, self.servant_2star, self.servant_3star, self.servant_4star, self.lily, self.habetrot,
+            self.servant_0star, self.servant_1star, self.servant_2star, self.servant_3star, self.servant_4star,
+            self.lily, self.habetrot, self.xavio, self.xaviko,
             self.exp_1star, self.exp_2star, self.exp_3star, self.exp_4star, self.exp_5star,
             self.status_1star, self.status_2star, self.status_3star,
             self.ce_1star, self.ce_2star, self.ce_3star,
@@ -85,13 +88,14 @@ class FpSummon():
 
         result += """
 【まんわかFP召喚】{}回
-鯖: ★0_{}-★1_{}(アニング{})-★2_{}-★3_{}-★4_{}(リリィ{},ハベ{})
+鯖: ★0_{}-★1_{}(アニング{})-★2_{}-★3_{}-★4_{}(リリィ{},ハベ{},ザビ男{},ザビ子{})
 種火: ★1_{}-★2_{}-★3_{}-★4_{}-★5_{}
 フォウ: ★1_{}-★2_{}-★3_{}
 礼装: ★1_{}-★2_{}-★3_{}-★3EXP_{}-★4EXP_{}
 コード: ★1_{}-★2_{}
 """.format(self.sum_summon,
-            self.servant_0star, self.servant_1star, self.anning, self.servant_2star, self.servant_3star, self.servant_4star, self.lily, self.habetrot,
+            self.servant_0star, self.servant_1star, self.anning, self.servant_2star, self.servant_3star, self.servant_4star,
+            self.lily, self.habetrot, self.xavio, self.xaviko,
             self.exp_1star, self.exp_2star, self.exp_3star, self.exp_4star, self.exp_5star,
             self.status_1star, self.status_2star, self.status_3star,
             self.ce_1star, self.ce_2star, self.ce_3star, self.ce_exp_3star, self.ce_exp_4star,
@@ -112,13 +116,14 @@ class FpSummon():
 
         result += """
 【邪馬台国FP召喚】{}回
-鯖: ★0_{}-★1_{}(信勝{})-★2_{}-★3_{}-★4_{}(リリィ{},ハベ{})
+鯖: ★0_{}-★1_{}(信勝{})-★2_{}-★3_{}-★4_{}(リリィ{},ハベ{},ザビ男{},ザビ子{})
 種火: ★1_{}-★2_{}-★3_{}-★4_{}-★5_{}
 フォウ: ★1_{}-★2_{}-★3_{}
 礼装: ★1_{}-★2_{}-★3_{}-★3EXP_{}-★4EXP_{}
 コード: ★1_{}-★2_{}
 """.format(self.sum_summon,
-            self.servant_0star, self.servant_1star, self.nobukatsu, self.servant_2star, self.servant_3star, self.servant_4star, self.lily, self.habetrot,
+            self.servant_0star, self.servant_1star, self.nobukatsu, self.servant_2star, self.servant_3star, self.servant_4star,
+            self.lily, self.habetrot, self.xavio, self.xaviko,
             self.exp_1star, self.exp_2star, self.exp_3star, self.exp_4star, self.exp_5star,
             self.status_1star, self.status_2star, self.status_3star,
             self.ce_1star, self.ce_2star, self.ce_3star, self.ce_exp_3star, self.ce_exp_4star,
@@ -303,6 +308,10 @@ def make_data(args):
                     fp_summon.lily += int(row[item])
                 if item == "ハベトロット【騎】":
                     fp_summon.habetrot += int(row[item])
+                if item == "ザビ男【月】":
+                    fp_summon.xavio += int(row[item])
+                if item == "ザビ子【月】":
+                    fp_summon.xaviko += int(row[item])
 
     return fp_summon.format() + sq_summon.format()
 

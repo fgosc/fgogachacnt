@@ -81,6 +81,10 @@ dist_local_ce_center = {
 dist_servant = {
 }
 dist_ce = {
+    '断絶_売却': np.array([[227, 184, 214, 186, 252, 254, 239, 191]], dtype='uint8'),
+    '暗澹_売却': np.array([[5, 204, 59, 51, 78, 59, 206, 152]], dtype='uint8'),
+    '暗澹_売却2': np.array([[169, 196, 179, 9,  78, 185, 238,  59]], dtype='uint8'),
+    '暗澹_売却3': np.array([[169, 78, 58, 177, 204, 147, 206, 113]], dtype='uint8'),
     }
 dist_ce_center = {
     }

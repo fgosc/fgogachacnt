@@ -66,7 +66,8 @@ class FpSummon():
 礼装: ★1_{}-★2_{}-★3_{}
 コード: ★1_{}-★2_{}
 """.format(self.sum_summon,
-            self.servant_0star, self.servant_1star, self.servant_2star, self.servant_3star, self.servant_4star,
+            self.servant_0star, self.servant_1star, self.servant_2star, self.servant_3star,
+            self.lily + self.habetrot + self.xavio + self.xaviko,
             self.lily, self.habetrot, self.xavio, self.xaviko,
             self.exp_1star, self.exp_2star, self.exp_3star, self.exp_4star, self.exp_5star,
             self.status_1star, self.status_2star, self.status_3star,
@@ -80,21 +81,25 @@ class FpSummon():
                      + self.status_1star + self.status_2star + self.status_3star \
                      + self.ce_1star + self.ce_2star + self.ce_3star \
                      + self.ccode_1star + self.ccode_2star
+        summon_4star_diff = self.servant_4star - self.lily - self.habetrot - self.xavio - self.xaviko
         summon_diff = self.sum_summon - num_summon
+        if summon_4star_diff > 0:
+            result += "その他★4鯖" + str(summon_4star_diff) + "\n"        
         if summon_diff > 0:
             result += "その他" + str(summon_diff) + "\n"
 
         result += "#FGO_FP召喚報告\n"
 
         result += """
-【まんわかFP召喚】{}回
-鯖: ★0_{}-★1_{}(アニング{})-★2_{}-★3_{}-★4_{}(リリィ{},ハベ{},ザビ男{},ザビ子{})
+【2024年10月イベント(仮)FP召喚】{}回
+鯖: ★0_{}-★1_{}-★2_{}-★3_{}-★4_{}(リリィ{},ハベ{},ザビ男{},ザビ子{})
 種火: ★1_{}-★2_{}-★3_{}-★4_{}-★5_{}
 フォウ: ★1_{}-★2_{}-★3_{}
 礼装: ★1_{}-★2_{}-★3_{}-★3EXP_{}-★4EXP_{}
 コード: ★1_{}-★2_{}
 """.format(self.sum_summon,
-            self.servant_0star, self.servant_1star, self.anning, self.servant_2star, self.servant_3star, self.servant_4star,
+            self.servant_0star, self.servant_1star, self.servant_2star, self.servant_3star,
+            self.lily + self.habetrot + self.xavio + self.xaviko,
             self.lily, self.habetrot, self.xavio, self.xaviko,
             self.exp_1star, self.exp_2star, self.exp_3star, self.exp_4star, self.exp_5star,
             self.status_1star, self.status_2star, self.status_3star,
@@ -108,39 +113,78 @@ class FpSummon():
                      + self.status_1star + self.status_2star + self.status_3star \
                      + self.ce_1star + self.ce_2star + self.ce_3star + self.ce_exp_3star + self.ce_exp_4star \
                      + self.ccode_1star + self.ccode_2star
+        summon_4star_diff = self.servant_4star - self.lily - self.habetrot - self.xavio - self.xaviko
         summon_diff = self.sum_summon - num_summon
+        if  summon_4star_diff > 0:
+            result += "その他★4鯖" + str(summon_4star_diff) + "\n"        
         if summon_diff > 0:
             result += "その他" + str(summon_diff) + "\n"
 
         result += "#FGO_FP召喚報告\n"
 
-        result += """
-【邪馬台国FP召喚】{}回
-鯖: ★0_{}-★1_{}(信勝{})-★2_{}-★3_{}-★4_{}(リリィ{},ハベ{},ザビ男{},ザビ子{})
-種火: ★1_{}-★2_{}-★3_{}-★4_{}-★5_{}
-フォウ: ★1_{}-★2_{}-★3_{}
-礼装: ★1_{}-★2_{}-★3_{}-★3EXP_{}-★4EXP_{}
-コード: ★1_{}-★2_{}
-""".format(self.sum_summon,
-            self.servant_0star, self.servant_1star, self.nobukatsu, self.servant_2star, self.servant_3star, self.servant_4star,
-            self.lily, self.habetrot, self.xavio, self.xaviko,
-            self.exp_1star, self.exp_2star, self.exp_3star, self.exp_4star, self.exp_5star,
-            self.status_1star, self.status_2star, self.status_3star,
-            self.ce_1star, self.ce_2star, self.ce_3star, self.ce_exp_3star, self.ce_exp_4star,
-            self.ccode_1star, self.ccode_2star)
+#         result += """
+# 【まんわかFP召喚】{}回
+# 鯖: ★0_{}-★1_{}(アニング{})-★2_{}-★3_{}-★4_{}(リリィ{},ハベ{},ザビ男{},ザビ子{})
+# 種火: ★1_{}-★2_{}-★3_{}-★4_{}-★5_{}
+# フォウ: ★1_{}-★2_{}-★3_{}
+# 礼装: ★1_{}-★2_{}-★3_{}-★3EXP_{}-★4EXP_{}
+# コード: ★1_{}-★2_{}
+# """.format(self.sum_summon,
+#             self.servant_0star, self.servant_1star, self.anning, self.servant_2star, self.servant_3star,
+#             self.lily + self.habetrot + self.xavio + self.xaviko,
+#             self.lily, self.habetrot, self.xavio, self.xaviko,
+#             self.exp_1star, self.exp_2star, self.exp_3star, self.exp_4star, self.exp_5star,
+#             self.status_1star, self.status_2star, self.status_3star,
+#             self.ce_1star, self.ce_2star, self.ce_3star, self.ce_exp_3star, self.ce_exp_4star,
+#             self.ccode_1star, self.ccode_2star)
 
-        num_summon = self.servant_0star + self.servant_1star + self.servant_2star \
-                     + self.servant_3star + self.servant_4star \
-                     + self.exp_1star + self.exp_2star + self.exp_3star \
-                     + self.exp_4star + self.exp_5star \
-                     + self.status_1star + self.status_2star + self.status_3star \
-                     + self.ce_1star + self.ce_2star + self.ce_3star + self.ce_exp_3star + self.ce_exp_4star \
-                     + self.ccode_1star + self.ccode_2star
-        summon_diff = self.sum_summon - num_summon
-        if summon_diff > 0:
-            result += "その他" + str(summon_diff) + "\n"
+#         num_summon = self.servant_0star + self.servant_1star + self.servant_2star \
+#                      + self.servant_3star + self.servant_4star \
+#                      + self.exp_1star + self.exp_2star + self.exp_3star \
+#                      + self.exp_4star + self.exp_5star \
+#                      + self.status_1star + self.status_2star + self.status_3star \
+#                      + self.ce_1star + self.ce_2star + self.ce_3star + self.ce_exp_3star + self.ce_exp_4star \
+#                      + self.ccode_1star + self.ccode_2star
+#         summon_4star_diff = self.servant_4star - self.lily - self.habetrot - self.xavio - self.xaviko
+#         summon_diff = self.sum_summon - num_summon
+#         if  summon_4star_diff > 0:
+#             result += "その他★4鯖" + str(summon_4star_diff) + "\n"        
+#         if summon_diff > 0:
+#             result += "その他" + str(summon_diff) + "\n"
 
-        result += "#FGO_FP召喚報告\n"
+#         result += "#FGO_FP召喚報告\n"
+
+#         result += """
+# 【邪馬台国FP召喚】{}回
+# 鯖: ★0_{}-★1_{}(信勝{})-★2_{}-★3_{}-★4_{}(リリィ{},ハベ{},ザビ男{},ザビ子{})
+# 種火: ★1_{}-★2_{}-★3_{}-★4_{}-★5_{}
+# フォウ: ★1_{}-★2_{}-★3_{}
+# 礼装: ★1_{}-★2_{}-★3_{}-★3EXP_{}-★4EXP_{}
+# コード: ★1_{}-★2_{}
+# """.format(self.sum_summon,
+#             self.servant_0star, self.servant_1star, self.nobukatsu, self.servant_2star, self.servant_3star,
+#             self.lily + self.habetrot + self.xavio + self.xaviko,
+#             self.lily, self.habetrot, self.xavio, self.xaviko,
+#             self.exp_1star, self.exp_2star, self.exp_3star, self.exp_4star, self.exp_5star,
+#             self.status_1star, self.status_2star, self.status_3star,
+#             self.ce_1star, self.ce_2star, self.ce_3star, self.ce_exp_3star, self.ce_exp_4star,
+#             self.ccode_1star, self.ccode_2star)
+
+#         num_summon = self.servant_0star + self.servant_1star + self.servant_2star \
+#                      + self.servant_3star + self.servant_4star \
+#                      + self.exp_1star + self.exp_2star + self.exp_3star \
+#                      + self.exp_4star + self.exp_5star \
+#                      + self.status_1star + self.status_2star + self.status_3star \
+#                      + self.ce_1star + self.ce_2star + self.ce_3star + self.ce_exp_3star + self.ce_exp_4star \
+#                      + self.ccode_1star + self.ccode_2star
+#         summon_4star_diff = self.servant_4star - self.lily - self.habetrot - self.xavio - self.xaviko
+#         summon_diff = self.sum_summon - num_summon
+#         if  summon_4star_diff > 0:
+#             result += "その他★4鯖" + str(summon_4star_diff) + "\n"        
+#         if summon_diff > 0:
+#             result += "その他" + str(summon_diff) + "\n"
+
+#         result += "#FGO_FP召喚報告\n"
 
         return result
 

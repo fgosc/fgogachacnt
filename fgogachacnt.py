@@ -508,7 +508,7 @@ class ScreenShot:
         pts = []
 
         # 下部の判定
-        # 「続けて(10|11)回召喚」を連打するためタップ跡の影響が置きやすい
+        # 「続けて(10|11)回召喚」を連打するためタップ跡の影響が起きやすい
 
         for tmpl in card_imgs:
             h, w = tmpl.shape[:2]
@@ -786,10 +786,16 @@ class ScreenShot:
 
 class Item:
     def __init__(self, img_rgb, title_img_rgb, svm_card, svm_rarity, debug=False):
+        command_code_similality = 10
         self.img_rgb = img_rgb
         self.title_img_rgb = title_img_rgb
         self.card = self.classify_card(svm_card)
-        self.name = self.classify_item(svm_rarity)
+        # コマンドコードは誤認識しやすいので先に厳しめで判定させる2回判定
+        self.name = self.classify_ccode(command_code_similality)
+        if self.name == "":
+            self.name = self.classify_item(svm_rarity)
+        else:
+            self.card = "Command Code"
         if debug:
             print(self.card, end=": ")
             print(self.name)
@@ -875,7 +881,7 @@ class Item:
 
         return ""
 
-    def classify_ccode(self):
+    def classify_ccode(self, similality=30):
         """
         既所持のアイテム画像の距離を計算して保持
         """
@@ -888,7 +894,7 @@ class Item:
         # 既存のアイテムとの距離を比較
         for i in dist_ccode.keys():
             d = hasher.compare(hash_item, dist_ccode[i])
-            if d <= 30:  # 15だとエラー有り
+            if d <= similality:  # 15だとエラー有り
                 itemfiles[i] = d
         if len(itemfiles) > 0:
             itemfiles = sorted(itemfiles.items(), key=lambda x: x[1])

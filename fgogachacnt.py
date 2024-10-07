@@ -79,6 +79,7 @@ dist_local_ce_center = {
 }
 
 dist_servant = {
+    'ザビ子【月】_2': np.array([[58, 57, 228, 36, 216, 192, 152, 217]], dtype='uint8'),
 }
 dist_ce = {
     '断絶_売却': np.array([[227, 184, 214, 186, 252, 254, 239, 191]], dtype='uint8'),
@@ -845,6 +846,9 @@ class Item:
         if len(itemfiles) > 0:
             itemfiles = sorted(itemfiles.items(), key=lambda x: x[1])
             item = next(iter(itemfiles))
+            if '_' in item[0]:
+                # hashの定義が複数あるアイテムの場合
+                return item[0].split("_")[0]
             return item[0]
 
         return ""
